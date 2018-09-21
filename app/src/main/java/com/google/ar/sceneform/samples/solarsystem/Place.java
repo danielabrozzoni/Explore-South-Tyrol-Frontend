@@ -17,6 +17,7 @@ package com.google.ar.sceneform.samples.solarsystem;
 
 import android.content.Context;
 import android.view.MotionEvent;
+import android.view.View;
 import android.widget.TextView;
 import com.google.ar.sceneform.FrameTime;
 import com.google.ar.sceneform.HitTestResult;
@@ -27,42 +28,40 @@ import com.google.ar.sceneform.rendering.ModelRenderable;
 import com.google.ar.sceneform.rendering.ViewRenderable;
 
 /**
- * Node that represents a planet.
+ * Node that represents a place.
  *
- * <p>The planet creates two child nodes when it is activated:
+ * <p>The place creates a child nodes when it is activated:
  *
  * <ul>
- *   <li>The visual of the planet, rotates along it's own axis and renders the planet.
- *   <li>An info card, renders an Android View that displays the name of the planerendt. This can be
- *       toggled on and off.
+ *   <li>The visual of the place.
+ *   <li>An info card, renders an Android View that displays the name of the place and a short description.
+ *   This can be toggled on and off.
  * </ul>
  *
- * The planet is rendered by a child instead of this node so that the spinning of the planet doesn't
- * make the info card spin as well.
  */
-public class Planet extends Node implements Node.OnTapListener {
-  private final String planetName;
-  private final float planetScale;
-  private final ModelRenderable planetRenderable;
-  private final SolarSettings solarSettings;
+public class Place extends Node implements Node.OnTapListener {
+  private final String placeName;
+  private final String description;
+  private final float placeScale;
+  private final ModelRenderable placeRenderable;
 
   private Node infoCard;
-  private Node planetVisual;
+  private Node placeVisual;
   private final Context context;
 
   private static final float INFO_CARD_Y_POS_COEFF = 0.55f;
 
-  public Planet(
+  public Place(
       Context context,
-      String planetName,
-      float planetScale,
-      ModelRenderable planetRenderable,
-      SolarSettings solarSettings) {
+      String placeName,
+      String description,
+      float placeScale,
+      ModelRenderable placeRenderable) {
     this.context = context;
-    this.planetName = planetName;
-    this.planetScale = planetScale;
-    this.planetRenderable = planetRenderable;
-    this.solarSettings = solarSettings;
+    this.placeName = placeName;
+    this.description = description;
+    this.placeScale = placeScale;
+    this.placeRenderable = placeRenderable;
     setOnTapListener(this);
   }
 
@@ -78,16 +77,17 @@ public class Planet extends Node implements Node.OnTapListener {
       infoCard = new Node();
       infoCard.setParent(this);
       infoCard.setEnabled(false);
-      infoCard.setLocalPosition(new Vector3(0.0f, planetScale * INFO_CARD_Y_POS_COEFF, 0.0f));
+      infoCard.setLocalPosition(new Vector3(0.0f, placeScale * INFO_CARD_Y_POS_COEFF, 0.0f));
 
       ViewRenderable.builder()
-          .setView(context, R.layout.planet_card_view)
+          .setView(context, R.layout.card_layout)
           .build()
           .thenAccept(
               (renderable) -> {
                 infoCard.setRenderable(renderable);
-                TextView textView = (TextView) renderable.getView();
-                textView.setText(planetName);
+                View view = renderable.getView();
+                ((TextView) view.findViewById(R.id.Title)).setText(placeName);
+                ((TextView) view.findViewById(R.id.description)).setText(String.format("%s%s%s", placeName, placeName, placeName));
               })
           .exceptionally(
               (throwable) -> {
@@ -95,11 +95,11 @@ public class Planet extends Node implements Node.OnTapListener {
               });
     }
 
-    if (planetVisual == null) {
-      planetVisual = new RotatingNode(solarSettings, false);
-      planetVisual.setParent(this);
-      planetVisual.setRenderable(planetRenderable);
-      planetVisual.setLocalScale(new Vector3(planetScale, planetScale, planetScale));
+    if (placeVisual == null) {
+      placeVisual = new Node();
+      placeVisual.setParent(this);
+      placeVisual.setRenderable(placeRenderable);
+      placeVisual.setLocalScale(new Vector3(placeScale, placeScale, placeScale));
     }
   }
 

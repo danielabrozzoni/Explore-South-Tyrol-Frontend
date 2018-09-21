@@ -6,14 +6,13 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.widget.Toast;
 
 import com.google.ar.sceneform.samples.solarsystem.DemoUtils;
-import com.google.ar.sceneform.samples.solarsystem.SolarActivity;
+import com.google.ar.sceneform.samples.solarsystem.PinActivity;
 
 import java.util.Locale;
 
@@ -27,9 +26,9 @@ public class LocationHelper {
     
     private LocationManager locationManager;
 
-    private static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 1; // 10 meters
+    private static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 1;
 
-    private static final long MIN_TIME_BW_UPDATES = 0;//1000 * 60 * 1; // 1 minute
+    private static final long MIN_TIME_BW_UPDATES = 1000 * 60; // 1 minute
 
     private boolean isGPSEnabled;
 
@@ -79,7 +78,7 @@ public class LocationHelper {
     private void initLocationService() {
 
         if (ContextCompat.checkSelfPermission(mActivity, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            DemoUtils.requestLocationPermission(mActivity, SolarActivity.RC_PERMISSIONS);
+            DemoUtils.requestLocationPermission(mActivity, PinActivity.RC_PERMISSIONS);
         }
 
         try {
@@ -93,7 +92,7 @@ public class LocationHelper {
             if (!isNetworkEnabled && !isGPSEnabled) {
                 // cannot get location
                 this.locationServiceAvailable = false;
-                DemoUtils.requestLocationPermission(mActivity, SolarActivity.RC_PERMISSIONS);
+                DemoUtils.requestLocationPermission(mActivity, PinActivity.RC_PERMISSIONS);
                 return;
             }
 

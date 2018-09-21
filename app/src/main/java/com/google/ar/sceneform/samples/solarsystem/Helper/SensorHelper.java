@@ -15,12 +15,19 @@ import static android.content.Context.SENSOR_SERVICE;
 public class SensorHelper {
 
     private static SensorHelper mInstance;
+
     private SensorManager mSensorManager;
+
     private float mCurrentDegree = -1;
+
     private Sensor mAccelerometer, mMagnetometer;
+
     private float[] mLastAccelerometer = new float[3], mLastMagnetometer = new float[3];
+
     private float[] mR = new float[9];
+
     private float[] mOrientation = new float[3];
+
     private boolean mLastAccelerometerSet = false, mLastMagnetometerSet = false;
 
     private Activity mActivity;
@@ -58,7 +65,10 @@ public class SensorHelper {
                     float azimuthInRadians = mOrientation[0];
                     float azimuthInDegress = (float)(Math.toDegrees(azimuthInRadians)+360)%360;
                     mCurrentDegree = -azimuthInDegress;
+                    mSensorManager.unregisterListener(this);
                 }
+
+
             }
 
             @Override

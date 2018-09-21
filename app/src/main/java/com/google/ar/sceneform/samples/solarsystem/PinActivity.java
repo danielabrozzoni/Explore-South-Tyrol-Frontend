@@ -15,21 +15,15 @@
  */
 package com.google.ar.sceneform.samples.solarsystem;
 
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.view.GestureDetector;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Toast;
 
-import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.ar.core.Anchor;
 import com.google.ar.core.Frame;
 import com.google.ar.core.Plane;
@@ -54,11 +48,10 @@ import java.util.concurrent.ExecutionException;
  * This is a simple example that shows how to create an augmented reality (AR) application using the
  * ARCore and Sceneform APIs.
  */
-public class SolarActivity extends AppCompatActivity {
+public class PinActivity extends AppCompatActivity {
     public static final int RC_PERMISSIONS = 0x123;
     private boolean installRequested;
 
-    private GestureDetector gestureDetector;
     private Snackbar loadingMessageSnackbar = null;
 
     private ArSceneView arSceneView;
@@ -67,15 +60,11 @@ public class SolarActivity extends AppCompatActivity {
     private ModelRenderable mercuryRenderable;
     private ModelRenderable venusRenderable;
     private ModelRenderable earthRenderable;
-    private ModelRenderable lunaRenderable;
     private ModelRenderable marsRenderable;
     private ModelRenderable jupiterRenderable;
     private ModelRenderable saturnRenderable;
     private ModelRenderable uranusRenderable;
     private ModelRenderable neptuneRenderable;
-    private ViewRenderable solarControlsRenderable;
-
-    private final SolarSettings solarSettings = new SolarSettings();
 
     private SensorHelper mSensorHelper;
 
@@ -87,8 +76,6 @@ public class SolarActivity extends AppCompatActivity {
     // True once the scene has been placed.
     private boolean hasPlacedSolarSystem = false;
 
-    // Astronomical units to meters ratio. Used for positioning the planets of the solar system.
-    private static final float AU_TO_METERS = 0.5f;
 
     @Override
     @SuppressWarnings({"AndroidApiChecker", "FutureReturnValueIgnored"})
@@ -96,16 +83,16 @@ public class SolarActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        if (!DemoUtils.checkIsSupportedDeviceOrFinish(this)) {
+            // Not a supported device.
+            return;
+        }
+
         DemoUtils.requestCameraPermission(this, RC_PERMISSIONS);
         DemoUtils.requestLocationPermission(this, RC_PERMISSIONS);
 
         mLocationHelper = LocationHelper.getInstance(this);
         mSensorHelper = SensorHelper.getInstance(this);
-
-        if (!DemoUtils.checkIsSupportedDeviceOrFinish(this)) {
-            // Not a supported device.
-            return;
-        }
 
         setContentView(R.layout.activity_solar);
         arSceneView = findViewById(R.id.ar_scene_view);
@@ -119,8 +106,6 @@ public class SolarActivity extends AppCompatActivity {
                 ModelRenderable.builder().setSource(this, Uri.parse("Venus.sfb")).build();
         CompletableFuture<ModelRenderable> earthStage =
                 ModelRenderable.builder().setSource(this, Uri.parse("Earth.sfb")).build();
-        CompletableFuture<ModelRenderable> lunaStage =
-                ModelRenderable.builder().setSource(this, Uri.parse("Luna.sfb")).build();
         CompletableFuture<ModelRenderable> marsStage =
                 ModelRenderable.builder().setSource(this, Uri.parse("Mars.sfb")).build();
         CompletableFuture<ModelRenderable> jupiterStage =
@@ -132,22 +117,16 @@ public class SolarActivity extends AppCompatActivity {
         CompletableFuture<ModelRenderable> neptuneStage =
                 ModelRenderable.builder().setSource(this, Uri.parse("Neptune.sfb")).build();
 
-        // Build a renderable from a 2D View.
-        CompletableFuture<ViewRenderable> solarControlsStage =
-                ViewRenderable.builder().setView(this, R.layout.solar_controls).build();
-
         CompletableFuture.allOf(
                 sunStage,
                 mercuryStage,
                 venusStage,
                 earthStage,
-                lunaStage,
                 marsStage,
                 jupiterStage,
                 saturnStage,
                 uranusStage,
-                neptuneStage,
-                solarControlsStage)
+                neptuneStage)
                 .handle(
                         (notUsed, throwable) -> {
                             // When you build a Renderable, Sceneform loads its resources in the background while
@@ -164,13 +143,11 @@ public class SolarActivity extends AppCompatActivity {
                                 mercuryRenderable = mercuryStage.get();
                                 venusRenderable = venusStage.get();
                                 earthRenderable = earthStage.get();
-                                lunaRenderable = lunaStage.get();
                                 marsRenderable = marsStage.get();
                                 jupiterRenderable = jupiterStage.get();
                                 saturnRenderable = saturnStage.get();
                                 uranusRenderable = uranusStage.get();
                                 neptuneRenderable = neptuneStage.get();
-                                solarControlsRenderable = solarControlsStage.get();
 
                                 // Everything finished loading successfully.
                                 hasFinishedLoading = true;
@@ -210,17 +187,15 @@ public class SolarActivity extends AppCompatActivity {
                                 if (plane.getTrackingState() == TrackingState.TRACKING) {
                                     hideLoadingMessage();
                                     hasPlacedSolarSystem = true;
-                                    Node solarSystem = createSolarSystem();
+                                    Node worldView = placePins();
                                     Pose pose = new Pose(new float[]{0.0f, 0.0f, 0.0f}, new float[]{0.0f, 0.0f, 0.0f, 0.0f});
                                     Anchor anchor = plane.createAnchor(pose);
                                     AnchorNode anchorNode = new AnchorNode(anchor);
                                     anchorNode.setParent(arSceneView.getScene());
-                                    anchorNode.addChild(solarSystem);
+                                    anchorNode.addChild(worldView);
                                 }
                             }
                         });
-
-        // Lastly request CAMERA permission which is required by ARCore.
     }
 
     @Override
@@ -310,53 +285,53 @@ public class SolarActivity extends AppCompatActivity {
     }
 
 
-    private Node createSolarSystem() {
+    private Node placePins() {
         Node base = new Node();
         base.setLocalPosition(arSceneView.getScene().getCamera().getWorldPosition());
         Node sun = new Node();
         sun.setParent(base);
         sun.setLocalPosition(new Vector3(0.0f, 0.0f, 0.0f));
 
-        Node sunVisual = new Node();
-        sunVisual.setParent(sun);
-        sunVisual.setRenderable(sunRenderable);
-        sunVisual.setLocalScale(new Vector3(0.5f, 0.5f, 0.5f));
+        //Node sunVisual = new Node();
+        //sunVisual.setParent(sun);
+        //sunVisual.setRenderable(sunRenderable);
+        //sunVisual.setLocalScale(new Vector3(0.5f, 0.5f, 0.5f));
 
+        createPlace("Mercury", "Mercury", sun, mercuryRenderable, 0.019f, -0.1f, -0.1f, -0.1f);
 
-        createPlanet("Mercury", sun, 0.4f, mercuryRenderable, 0.019f);
+        createPlace("Venus", "Venus", sun, venusRenderable, 0.0475f, -2, -2, -2);
 
-        createPlanet("Venus", sun, 0.7f, venusRenderable, 0.0475f);
+        createPlace("Earth", "Earth", sun, earthRenderable, 0.05f, 0.1f, 0.5f, 0.8f);
 
-        Node earth = createPlanet("Earth", sun, 1.0f, earthRenderable, 0.05f);
+        createPlace("Mars", "Mars", sun, marsRenderable, 0.0265f, 0.5f, 0.1f, 0.8f);
 
-        createPlanet("Moon", earth, 0.15f, lunaRenderable, 0.018f);
+        createPlace("Jupiter", "Jupiter", sun, jupiterRenderable, 0.16f, 5, 5, 5);
 
-        createPlanet("Mars", sun, 1.5f, marsRenderable, 0.0265f);
+        createPlace("Saturn", "Saturn", sun, saturnRenderable, 0.1325f, 2, 2, 2);
 
-        createPlanet("Jupiter", sun, 2.2f, jupiterRenderable, 0.16f);
+        createPlace("Uranus", "Uranus", sun, uranusRenderable, 0.1f, 0.4f, 0.1f, 0.8f);
 
-        createPlanet("Saturn", sun, 3.5f, saturnRenderable, 0.1325f);
-
-        createPlanet("Uranus", sun, 5.2f, uranusRenderable, 0.1f);
-
-        createPlanet("Neptune", sun, 6.1f, neptuneRenderable, 0.074f);
+        createPlace("Neptune", "Neptune", sun, neptuneRenderable, 0.074f, 0.6f, 0.1f, 0.9f);
 
         return base;
     }
 
-    private Node createPlanet(
+    private Node createPlace(
             String name,
+            String description,
             Node parent,
-            float auFromParent,
             ModelRenderable renderable,
-            float planetScale) {
+            float planetScale,
+            float x,
+            float y,
+            float z) {
 
-        // Create the planet and position it relative to the sun.
-        Planet planet = new Planet(this, name, planetScale, renderable, solarSettings);
-        planet.setParent(parent);
-        planet.setLocalPosition(new Vector3(auFromParent * AU_TO_METERS, (float) Math.random(), (float) Math.random()));
+        // Create the place and position it relative to the sun.
+        Place place = new Place(this, name, description, planetScale, renderable);
+        place.setParent(parent);
+        place.setLocalPosition(new Vector3(x,y,z));
 
-        return planet;
+        return place;
     }
 
     private void showLoadingMessage() {
@@ -366,7 +341,7 @@ public class SolarActivity extends AppCompatActivity {
 
         loadingMessageSnackbar =
                 Snackbar.make(
-                        SolarActivity.this.findViewById(android.R.id.content),
+                        PinActivity.this.findViewById(android.R.id.content),
                         R.string.plane_finding,
                         Snackbar.LENGTH_INDEFINITE);
         loadingMessageSnackbar.getView().setBackgroundColor(0xbf323232);
