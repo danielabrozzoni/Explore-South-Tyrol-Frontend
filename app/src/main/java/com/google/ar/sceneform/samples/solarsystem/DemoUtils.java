@@ -115,6 +115,11 @@ public class DemoUtils {
         activity, new String[] {Manifest.permission.CAMERA}, requestCode);
   }
 
+  public static void requestLocationPermission(Activity activity, int requestCode) {
+    ActivityCompat.requestPermissions(
+            activity, new String[] {Manifest.permission.ACCESS_FINE_LOCATION}, requestCode);
+  }
+
   /** Check to see we have the necessary permissions for this app. */
   public static boolean hasCameraPermission(Activity activity) {
     return ContextCompat.checkSelfPermission(activity, Manifest.permission.CAMERA)

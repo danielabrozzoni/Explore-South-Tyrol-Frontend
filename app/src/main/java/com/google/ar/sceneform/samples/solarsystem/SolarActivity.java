@@ -15,17 +15,21 @@
  */
 package com.google.ar.sceneform.samples.solarsystem;
 
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.view.GestureDetector;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Toast;
 
+import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.ar.core.Anchor;
 import com.google.ar.core.Frame;
 import com.google.ar.core.Plane;
@@ -36,11 +40,12 @@ import com.google.ar.core.exceptions.CameraNotAvailableException;
 import com.google.ar.core.exceptions.UnavailableException;
 import com.google.ar.sceneform.AnchorNode;
 import com.google.ar.sceneform.ArSceneView;
-import com.google.ar.sceneform.HitTestResult;
 import com.google.ar.sceneform.Node;
 import com.google.ar.sceneform.math.Vector3;
 import com.google.ar.sceneform.rendering.ModelRenderable;
 import com.google.ar.sceneform.rendering.ViewRenderable;
+import com.google.ar.sceneform.samples.solarsystem.Helper.LocationHelper;
+import com.google.ar.sceneform.samples.solarsystem.Helper.SensorHelper;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -50,7 +55,7 @@ import java.util.concurrent.ExecutionException;
  * ARCore and Sceneform APIs.
  */
 public class SolarActivity extends AppCompatActivity {
-    private static final int RC_PERMISSIONS = 0x123;
+    public static final int RC_PERMISSIONS = 0x123;
     private boolean installRequested;
 
     private GestureDetector gestureDetector;
@@ -72,6 +77,10 @@ public class SolarActivity extends AppCompatActivity {
 
     private final SolarSettings solarSettings = new SolarSettings();
 
+    private SensorHelper mSensorHelper;
+
+    private LocationHelper mLocationHelper;
+
     // True once scene is loaded
     private boolean hasFinishedLoading = false;
 
@@ -86,6 +95,12 @@ public class SolarActivity extends AppCompatActivity {
     // CompletableFuture requires api level 24
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        DemoUtils.requestCameraPermission(this, RC_PERMISSIONS);
+        DemoUtils.requestLocationPermission(this, RC_PERMISSIONS);
+
+        mLocationHelper = LocationHelper.getInstance(this);
+        mSensorHelper = SensorHelper.getInstance(this);
 
         if (!DemoUtils.checkIsSupportedDeviceOrFinish(this)) {
             // Not a supported device.
@@ -167,37 +182,6 @@ public class SolarActivity extends AppCompatActivity {
                             return null;
                         });
 
-        // Set up a tap gesture detector.
-        gestureDetector =
-                new GestureDetector(
-                        this,
-                        new GestureDetector.SimpleOnGestureListener() {
-                            @Override
-                            public boolean onSingleTapUp(MotionEvent e) {
-                                //onSingleTap(e);
-                                return true;
-                            }
-
-                            @Override
-                            public boolean onDown(MotionEvent e) {
-                                return true;
-                            }
-                        });
-
-        // Set a touch listener on the Scene to listen for taps.
-        arSceneView
-                .getScene()
-                .setOnTouchListener(
-                        (HitTestResult hitTestResult, MotionEvent event) -> {
-                            // If the solar system hasn't been placed yet, detect a tap and then check to see if
-                            // the tap occurred on an ARCore plane to place the solar system.
-                            if (!hasPlacedSolarSystem) {
-                                return gestureDetector.onTouchEvent(event);
-                            }
-
-                            // Otherwise return false so that the touch event can propagate to the scene.
-                            return false;
-                        });
 
         // Set an update listener on the Scene that will hide the loading message once a Plane is
         // detected.
@@ -218,9 +202,14 @@ public class SolarActivity extends AppCompatActivity {
                                 return;
                             }
 
+                            if (hasPlacedSolarSystem)
+                                return;
+
                             for (Plane plane : frame.getUpdatedTrackables(Plane.class)) {
+
                                 if (plane.getTrackingState() == TrackingState.TRACKING) {
                                     hideLoadingMessage();
+                                    hasPlacedSolarSystem = true;
                                     Node solarSystem = createSolarSystem();
                                     Pose pose = new Pose(new float[]{0.0f, 0.0f, 0.0f}, new float[]{0.0f, 0.0f, 0.0f, 0.0f});
                                     Anchor anchor = plane.createAnchor(pose);
@@ -232,7 +221,6 @@ public class SolarActivity extends AppCompatActivity {
                         });
 
         // Lastly request CAMERA permission which is required by ARCore.
-        DemoUtils.requestCameraPermission(this, RC_PERMISSIONS);
     }
 
     @Override
@@ -320,7 +308,6 @@ public class SolarActivity extends AppCompatActivity {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
     }
-
 
 
     private Node createSolarSystem() {

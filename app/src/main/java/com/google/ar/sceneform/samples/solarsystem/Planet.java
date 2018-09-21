@@ -47,7 +47,7 @@ public class Planet extends Node implements Node.OnTapListener {
   private final SolarSettings solarSettings;
 
   private Node infoCard;
-  private RotatingNode planetVisual;
+  private Node planetVisual;
   private final Context context;
 
   private static final float INFO_CARD_Y_POS_COEFF = 0.55f;
