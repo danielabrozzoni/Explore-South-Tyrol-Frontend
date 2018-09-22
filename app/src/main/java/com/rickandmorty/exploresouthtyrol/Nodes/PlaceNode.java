@@ -56,7 +56,7 @@ public class PlaceNode extends Node implements Node.OnTouchListener {
 
     private final Context context;
 
-    private static final float INFO_CARD_Y_POS_COEFF = 1.55f;
+    private static final float INFO_CARD_Y_POS_COEFF = 3.55f;
 
     public PlaceNode(
             Context context,

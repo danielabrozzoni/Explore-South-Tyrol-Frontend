@@ -22,6 +22,9 @@ public class PlaceModel {
     @SerializedName("dist")
     public float distance;
 
+    @SerializedName("type")
+    public String type;
+
     @Override
     public String toString() {
         return "PlaceModel{" +

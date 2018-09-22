@@ -72,3 +72,8 @@ sceneform.asset('sampledata/models/Pin/Pin.gltf',
         'default',
         'sampledata/models/Pin/Pin.sfa',
         'src/main/assets/Pin')
+
+sceneform.asset('sampledata/models/StarredPin/StarredPin.gltf',
+        'default',
+        'sampledata/models/StarredPin/StarredPin.sfa',
+        'src/main/assets/StarredPin')

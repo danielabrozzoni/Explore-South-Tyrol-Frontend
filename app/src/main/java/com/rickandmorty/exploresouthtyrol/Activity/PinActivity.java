@@ -38,7 +38,7 @@ import com.google.ar.sceneform.Node;
 import com.google.ar.sceneform.math.Quaternion;
 import com.google.ar.sceneform.math.Vector3;
 import com.google.ar.sceneform.rendering.ModelRenderable;
-import com.google.ar.sceneform.samples.solarsystem.*;
+import com.google.ar.sceneform.samples.solarsystem.R;
 import com.rickandmorty.exploresouthtyrol.Helper.CompassHelper;
 import com.rickandmorty.exploresouthtyrol.Helper.DemoUtils;
 import com.rickandmorty.exploresouthtyrol.Helper.GestureHelper;
@@ -46,12 +46,13 @@ import com.rickandmorty.exploresouthtyrol.Helper.LocationHelper;
 import com.rickandmorty.exploresouthtyrol.Model.PlaceModel;
 import com.rickandmorty.exploresouthtyrol.Nodes.AcceleratingNode;
 import com.rickandmorty.exploresouthtyrol.Nodes.PlaceNode;
-import com.rickandmorty.exploresouthtyrol.Service.PlaceService;
 import com.rickandmorty.exploresouthtyrol.Thread.GetPointsThread;
 import com.rickandmorty.exploresouthtyrol.Thread.StarPlaceThread;
 import com.rickandmorty.exploresouthtyrol.Widget.Tutorial;
 
-import java.util.*;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.ListIterator;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
@@ -68,6 +69,7 @@ public class PinActivity extends AppCompatActivity {
 
     private ModelRenderable pinRenderable;
     private ModelRenderable starRenderable;
+    private ModelRenderable starredPinRenderable;
 
     private CompassHelper mCompassHelper;
     private GetPointsThread mGetPoints;
@@ -157,7 +159,7 @@ public class PinActivity extends AppCompatActivity {
 
                             // Try to place the stars
                             ListIterator<Vector3> iter = queuedStars.listIterator();
-                            while(iter.hasNext()){
+                            while (iter.hasNext()) {
                                 Vector3 swipeForce = iter.next();
                                 //Vector3 initialForce = new Vector3(swipeForce.x, 300f, 0);
 
@@ -315,7 +317,7 @@ public class PinActivity extends AppCompatActivity {
         base.setLocalPosition(arSceneView.getScene().getCamera().getWorldPosition());
 
         for (PlaceModel placeModel : placeModels) {
-            createPlace(placeModel, base, pinRenderable);
+            createPlace(placeModel, base, placeModel.type != null && placeModel.type.equals("STARRED") ? starredPinRenderable : pinRenderable);
         }
 
         return base;
@@ -347,10 +349,14 @@ public class PinActivity extends AppCompatActivity {
                 ModelRenderable.builder().setSource(this, Uri.parse("Pin.sfb")).build();
         CompletableFuture<ModelRenderable> starStage =
                 ModelRenderable.builder().setSource(this, Uri.parse("Star.sfb")).build();
+        CompletableFuture<ModelRenderable> starredpinStage =
+                ModelRenderable.builder().setSource(this, Uri.parse("StarredPin.sfb")).build();
+
 
         CompletableFuture.allOf(
                 pinStage,
-                starStage)
+                starStage,
+                starredpinStage)
                 .handle(
                         (notUsed, throwable) -> {
                             // When you build a Renderable, Sceneform loads its resources in the background while
@@ -365,6 +371,7 @@ public class PinActivity extends AppCompatActivity {
                             try {
                                 pinRenderable = pinStage.get();
                                 starRenderable = starStage.get();
+                                starredPinRenderable = starredpinStage.get();
 
                             } catch (InterruptedException | ExecutionException ex) {
                                 DemoUtils.displayError(this, "Unable to load renderable", ex);
