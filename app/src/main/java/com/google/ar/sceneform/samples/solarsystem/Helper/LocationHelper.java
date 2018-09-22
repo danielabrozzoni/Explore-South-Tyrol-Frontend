@@ -119,10 +119,6 @@ public class LocationHelper {
         } catch (Exception ex) {
             Log.e(this.getClass().getSimpleName(), ex.getMessage());
 
-        } finally {
-
-            if(lastLocation == null) return;
-            ((PinActivity) mActivity).onLocationKnown();
         }
     }
 

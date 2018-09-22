@@ -7,6 +7,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.animation.Animation;
 import android.widget.LinearLayout;
+import android.widget.TextClock;
+import android.widget.TextView;
 
 import com.google.ar.sceneform.samples.solarsystem.Helper.AnimationHelper;
 import com.google.ar.sceneform.samples.solarsystem.R;
@@ -34,6 +36,7 @@ public class Tutorial extends LinearLayout {
 
     public void init() {
         View view = LayoutInflater.from(getContext()).inflate(R.layout.tutorial_view, this, false);
+        ((TextView) view.findViewById(R.id.hint)).setText(R.string.tutorial_surface);
         addView(view);
     }
 
@@ -75,5 +78,9 @@ public class Tutorial extends LinearLayout {
 
             }
         });
+    }
+
+    public void dontMove() {
+        ((TextView) findViewById(R.id.hint)).setText(R.string.tutorial_dontmove);
     }
 }

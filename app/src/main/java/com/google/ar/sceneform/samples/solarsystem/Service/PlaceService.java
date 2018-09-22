@@ -19,7 +19,7 @@ public class PlaceService {
 
     static final String BASE_URL = "https://1a490957.ngrok.io/";
 
-    public void start(float latitude, float longitude, Callback<List<PlaceModel>> callback) {
+    public void start(float latitude, float longitude, float heading, Callback<List<PlaceModel>> callback) {
         Gson gson = new GsonBuilder()
                 .setLenient()
                 .create();
@@ -31,7 +31,7 @@ public class PlaceService {
 
         GetPlaceApi getPlaceApi = retrofit.create(GetPlaceApi.class);
 
-        Call<List<PlaceModel>> call = getPlaceApi.loadPlaces(latitude, longitude);
+        Call<List<PlaceModel>> call = getPlaceApi.loadPlaces(latitude, longitude, heading);
         call.enqueue(callback);
 
     }

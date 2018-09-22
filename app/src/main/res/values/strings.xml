@@ -18,4 +18,5 @@
     <string name="app_name">Solar System</string>
     <string name="plane_finding">Searching for surfaces&#8230;</string>
     <string name="tutorial_surface">Point your phone to the floor</string>
+    <string name="tutorial_dontmove">Please don\'t move the phone</string>
 </resources>

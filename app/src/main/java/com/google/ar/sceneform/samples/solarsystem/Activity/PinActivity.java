@@ -72,7 +72,9 @@ public class PinActivity extends AppCompatActivity {
 
     private LocationHelper mLocationHelper;
 
-    private List<PlaceModel> mPlaceModels;
+    private final float INITIAL_SCALE = 0.3f;
+
+    private final float SCALE_FACTOR = 0.1f;
 
     // True once scene is loaded
     private boolean hasFinishedLoading = false;
@@ -123,26 +125,13 @@ public class PinActivity extends AppCompatActivity {
 
                     for (Plane plane : frame.getUpdatedTrackables(Plane.class)) {
 
-                        if (plane.getTrackingState() == TrackingState.TRACKING && mPlaceModels != null) {
-                            hideLoadingMessage();
-                            mCompassHelper = CompassHelper.getInstance(this, new Runnable() {
+                        if (plane.getTrackingState() == TrackingState.TRACKING) {
+                            displayDontMoveMessage();
+                            mCompassHelper = CompassHelper.getInstance(this);
+                            mCompassHelper.init(new Runnable() {
                                 @Override
                                 public void run() {
-                                    Node worldView = placePins();
-                                    Pose pose = new Pose(new float[]{0.0f, 0.0f, 0.0f}, new float[]{0.0f, 0.0f, 0.0f, 0.0f});
-
-                                    Log.d("PinActivityL", "" + worldView.getWorldRotation().toString());
-
-                                    worldView.setWorldRotation(new Quaternion(Vector3.up(),  360 + mCompassHelper.getCurrentDegree()));
-
-                                    Log.d("PinActivityL", "" + worldView.getWorldRotation().toString());
-
-                                    Toast.makeText(PinActivity.this, "Rotation: " + (int)(360 + mCompassHelper.getCurrentDegree()), Toast.LENGTH_SHORT).show();
-
-                                    Anchor anchor = plane.createAnchor(pose);
-                                    AnchorNode anchorNode = new AnchorNode(anchor);
-                                    anchorNode.setParent(arSceneView.getScene());
-                                    anchorNode.addChild(worldView);
+                                    onLocationAndPositionKnown(plane);
                                 }
                             });
                             hasPlacedSolarSystem = true;
@@ -150,6 +139,29 @@ public class PinActivity extends AppCompatActivity {
                     }
                 });
 
+    }
+
+    private void displayPins(List<PlaceModel> placeModels, Plane plane) {
+        Node worldView = placePins(placeModels);
+        Pose pose = new Pose(new float[]{0.0f, 0.0f, 0.0f}, new float[]{0.0f, 0.0f, 0.0f, 0.0f});
+
+        //Log.d("PinActivityL", "" + worldView.getWorldRotation().toString());
+
+        //worldView.setWorldRotation(new Quaternion(Vector3.up(),  mCompassHelper.getCurrentDegree()));
+
+        //Log.d("PinActivityL", "" + worldView.getWorldRotation().toString());
+
+        //Toast.makeText(PinActivity.this, "Rotation: " + (int)(mCompassHelper.getCurrentDegree()), Toast.LENGTH_SHORT).show();
+
+        Anchor anchor = plane.createAnchor(pose);
+        AnchorNode anchorNode = new AnchorNode(anchor);
+        anchorNode.setParent(arSceneView.getScene());
+        anchorNode.addChild(worldView);
+        hideLoadingMessage();
+    }
+
+    private void displayDontMoveMessage() {
+        ((Tutorial) findViewById(R.id.tutorial)).dontMove();
     }
 
     @Override
@@ -239,16 +251,13 @@ public class PinActivity extends AppCompatActivity {
     }
 
 
-    private Node placePins() {
+    private Node placePins(List<PlaceModel> placeModels) {
         Node base = new Node();
         base.setLocalPosition(arSceneView.getScene().getCamera().getWorldPosition());
-        Node sun = new Node();
-        sun.setParent(base);
-        sun.setLocalPosition(new Vector3(0.0f, 0.0f, 0.0f));
 
-        for(PlaceModel placeModel: mPlaceModels) {
+        for(PlaceModel placeModel: placeModels) {
 
-            createPlace(placeModel, base, pinRenderable, 0.9f);
+            createPlace(placeModel, base, pinRenderable);
         }
 
         return base;
@@ -257,11 +266,12 @@ public class PinActivity extends AppCompatActivity {
     private Node createPlace(
             PlaceModel placeModel,
             Node parent,
-            ModelRenderable renderable,
-            float planetScale) {
+            ModelRenderable renderable) {
 
-        // Create the placeNode and position it relative to the sun.
-        PlaceNode placeNode = new PlaceNode(this, placeModel, planetScale, renderable);
+
+        float placeScale = INITIAL_SCALE + SCALE_FACTOR / placeModel.distance;
+
+        PlaceNode placeNode = new PlaceNode(this, placeModel, placeScale, renderable);
         placeNode.setParent(parent);
         placeNode.setLocalPosition(new Vector3(placeModel.x, placeModel.y, placeModel.z));
 
@@ -311,14 +321,16 @@ public class PinActivity extends AppCompatActivity {
                         });
     }
 
-    public void onLocationKnown() {
+    public void onLocationAndPositionKnown(Plane plane) {
         PlaceService placeService = new PlaceService();
         placeService.start((float) mLocationHelper.getLastLocation().getLatitude(),
-                (float) mLocationHelper.getLastLocation().getLongitude(), new Callback<List<PlaceModel>>() {
+                (float) mLocationHelper.getLastLocation().getLongitude(),
+                mCompassHelper.getCurrentDegree(),
+                 new Callback<List<PlaceModel>>() {
                     @Override
                     public void onResponse(Call<List<PlaceModel>> call, Response<List<PlaceModel>> response) {
                         if(response.isSuccessful())
-                            mPlaceModels = response.body();
+                            displayPins(response.body(), plane);
                         else
                             Toast.makeText(PinActivity.this, "No Internet connection", Toast.LENGTH_SHORT).show();
                     }

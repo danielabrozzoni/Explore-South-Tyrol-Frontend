@@ -32,15 +32,14 @@ public class CompassHelper {
 
     private Activity mActivity;
 
-    public static CompassHelper getInstance(Activity activity, Runnable r) {
+    public static CompassHelper getInstance(Activity activity) {
         if(mInstance == null)
-            mInstance = new CompassHelper(activity, r);
+            mInstance = new CompassHelper(activity);
         return mInstance;
     }
 
-    private CompassHelper(Activity activity, Runnable r){
+    private CompassHelper(Activity activity){
         mActivity = activity;
-        init(r);
     }
 
     public SensorEventListener getSensorEventListener(Runnable r) {
@@ -48,8 +47,8 @@ public class CompassHelper {
             @Override
             public void onSensorChanged(SensorEvent event) {
 
-                if(mCurrentDegree != -1)
-                    return;
+                //if(mCurrentDegree != -1)
+                    //return;
 
                 if (event.sensor == mAccelerometer) {
                     System.arraycopy(event.values, 0, mLastAccelerometer, 0, event.values.length);
@@ -68,7 +67,7 @@ public class CompassHelper {
                     mCurrentDegree = -azimuthInDegress;
                     Toast.makeText(mActivity, String.format("%s", mCurrentDegree), Toast.LENGTH_SHORT).show();
                     mSensorManager.unregisterListener(this);
-                    Log.d("CompassHelper", String.format("%s", mCurrentDegree));
+                    //Log.d("CompassHelper", String.format("%s", mCurrentDegree));
                     r.run();
                 }
 
@@ -81,7 +80,7 @@ public class CompassHelper {
         };
     }
 
-    private void init(Runnable r) {
+    public void init(Runnable r) {
         mSensorManager = (SensorManager) mActivity.getSystemService(SENSOR_SERVICE);
         mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         mMagnetometer = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
