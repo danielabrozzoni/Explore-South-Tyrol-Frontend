@@ -131,20 +131,9 @@ public class PinActivity extends AppCompatActivity {
                             }
 
                             if (mGetPoints == null) {
-                                displayDontMoveMessage(); // Warn the user to avoid movements
-                                mCompassHelper = CompassHelper.getInstance(this);
-                                mCompassHelper.init(() -> {
-                                    mGetPoints = new GetPointsThread((float) mLocationHelper.getLastLocation().getLatitude(),
-                                            (float) mLocationHelper.getLastLocation().getLongitude(),
-                                            mCompassHelper.getCurrentDegree());
-                                    mGetPoints.start();
-                                });
-
+                                mGetPoints = new GetPointsThread((float) mLocationHelper.getLastLocation().getLatitude(),
+                                        (float) mLocationHelper.getLastLocation().getLongitude());
                                 return;
-                            }
-
-                            if (!mGetPoints.hasPlaces()) {
-                                return; // keep waiting
                             }
 
                             Pose cameraPose = frame.getCamera().getPose();
@@ -187,8 +176,22 @@ public class PinActivity extends AppCompatActivity {
 
                             for (Plane plane : frame.getUpdatedTrackables(Plane.class)) {
                                 if (plane.getTrackingState() == TrackingState.TRACKING) {
-                                    // We have a plane and some places
-                                    displayPins(mGetPoints.getPlaces(), plane);
+                                    if (mGetPoints.hasPlaces()) {
+                                        displayPins(mGetPoints.getPlaces(), plane);
+                                    } else {
+                                        // We have a plane, let's query the server
+                                        displayDontMoveMessage(); // Warn the user to avoid movements
+
+                                        mCompassHelper = CompassHelper.getInstance(this);
+                                        mCompassHelper.init(() -> {
+                                            if (mGetPoints.isAlive()) {
+                                                return;
+                                            }
+
+                                            mGetPoints.setHeading(mCompassHelper.getCurrentDegree());
+                                            mGetPoints.start();
+                                        });
+                                    }
                                 }
                             }
                         });

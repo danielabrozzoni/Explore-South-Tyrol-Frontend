@@ -19,16 +19,19 @@ public class GetPointsThread extends Thread {
     private static final String BASE_URL = "https://1a490957.ngrok.io/";
     private List<PlaceModel> places = new ArrayList<>();
 
-    private final float latitude;
-    private final float longitude;
-    private final float heading;
+    private float latitude;
+    private float longitude;
+    private float heading;
 
-    private boolean loading = false;
+    private boolean started = false;
 
-    public GetPointsThread(float latitude, float longitude, float heading) {
+    public GetPointsThread(float latitude, float longitude) {
         super("GetPointsThread");
         this.latitude = latitude;
         this.longitude = longitude;
+    }
+
+    public void setHeading(float heading) {
         this.heading = heading;
     }
 
@@ -58,6 +61,16 @@ public class GetPointsThread extends Thread {
                 Log.d("PinActivity", t.getMessage());
             }
         });
+    }
+
+    @Override
+    public synchronized void start() {
+        if (this.started) {
+            return;
+        }
+
+        this.started = true;
+        super.start();
     }
 
     public synchronized boolean hasPlaces() {

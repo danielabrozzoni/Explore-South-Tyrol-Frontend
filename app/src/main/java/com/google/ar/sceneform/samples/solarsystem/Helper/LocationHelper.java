@@ -13,7 +13,6 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.google.ar.sceneform.samples.solarsystem.Activity.PinActivity;
-import com.google.ar.sceneform.samples.solarsystem.Service.PlaceService;
 
 import java.util.Locale;
 
