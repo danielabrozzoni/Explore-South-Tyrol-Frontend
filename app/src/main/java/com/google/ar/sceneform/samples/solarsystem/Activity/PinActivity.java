@@ -79,6 +79,7 @@ public class PinActivity extends AppCompatActivity {
 
     // True once the scene has been placed.
     private boolean hasPlacedPins = false;
+    private Anchor initialAnchor;
 
     private List<Vector3> queuedStars = new LinkedList<>();
 
@@ -132,34 +133,37 @@ public class PinActivity extends AppCompatActivity {
                                 return;
                             }
 
-                            Pose cameraPose = frame.getCamera().getDisplayOrientedPose();
+                            Pose cameraPose = frame.getCamera().getPose();
+
+                            Log.d("Camera orientation", cameraPose.toString());
+
+                            Vector3 initialForce = Quaternion.rotateVector(
+                                    new Quaternion(cameraPose.qw(), cameraPose.qx(), cameraPose.qy(), cameraPose.qz()),
+                                    Vector3.one()
+                            ).scaled(1000);
+
+                            initialForce.y = 500f;
+
                             AnchorNode anchorNode = null;
 
                             if (queuedStars.size() > 0) {
-                                Anchor anchor = arSceneView.getSession().createAnchor(cameraPose);
+                                Anchor anchor = arSceneView.getSession().createAnchor(frame.getCamera().getPose());
                                 anchorNode = new AnchorNode(anchor);
+                                anchorNode.setParent(arSceneView.getScene());
                             }
 
                             // Try to place the stars
                             ListIterator<Vector3> iter = queuedStars.listIterator();
                             while(iter.hasNext()){
                                 Vector3 swipeForce = iter.next();
-
-                                Vector3 initialForce = Quaternion.rotateVector(
-                                        new Quaternion(cameraPose.qw(), cameraPose.qx(), cameraPose.qy(), cameraPose.qz()),
-                                        Vector3.one()
-                                ).scaled(1000);
-
-                                // TODO: interpolate forces (sideways)
-
-                                initialForce.y = 800f; // Up
+                                //Vector3 initialForce = new Vector3(swipeForce.x, 300f, 0);
 
                                 Log.d("InitialForce", initialForce.toString());
 
-                                Node mStar = new AcceleratingNode(100, initialForce, 0.0f);
+                                Node mStar = new AcceleratingNode(100, initialForce, 10f);
                                 mStar.setParent(anchorNode);
                                 mStar.setRenderable(starRenderable);
-                                mStar.setLocalPosition(new Vector3(cameraPose.tx(), cameraPose.ty(), cameraPose.tz()));
+                                mStar.setLocalPosition(new Vector3(0f, -0.045f, 0f));
                                 mStar.setLocalScale(new Vector3(0.1f, 0.1f, 0.1f));
 
                                 iter.remove();
@@ -192,9 +196,9 @@ public class PinActivity extends AppCompatActivity {
         Node worldView = placePins(placeModels);
 
         Pose pose = new Pose(new float[]{0.0f, 0.0f, 0.0f}, new float[]{0.0f, 0.0f, 0.0f, 0.0f});
-        Anchor anchor = plane.createAnchor(pose);
+        initialAnchor = plane.createAnchor(pose);
 
-        AnchorNode anchorNode = new AnchorNode(anchor);
+        AnchorNode anchorNode = new AnchorNode(initialAnchor);
         anchorNode.setParent(arSceneView.getScene());
         anchorNode.addChild(worldView);
 

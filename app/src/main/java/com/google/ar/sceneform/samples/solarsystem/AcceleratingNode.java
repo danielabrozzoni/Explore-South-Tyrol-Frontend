@@ -50,9 +50,9 @@ public class AcceleratingNode extends Node {
     public void onUpdate(FrameTime frameTime) {
         super.onUpdate(frameTime);
 
-        Log.d("AcceleratingNodeL", this.getLocalPosition().toString());
+        Log.d("AcceleratingNodeL", this.getWorldPosition().toString());
 
-        if (this.getLocalPosition().y <= 50 && this.speed.y <= 0) {
+        if (this.getWorldPosition().y <= -3 && this.speed.y <= 0) {
             this.stopAnimation();
             this.setEnabled(false);
             return;
@@ -63,7 +63,7 @@ public class AcceleratingNode extends Node {
 
         //Log.d("AcceleratingNodeL", this.speed.toString());
 
-        this.setLocalPosition(Vector3.add(this.getLocalPosition(), this.speed.scaled(MAGIC)));
+        this.setWorldPosition(Vector3.add(this.getWorldPosition(), this.speed.scaled(MAGIC)));
 
         // Rotate
 
