@@ -29,10 +29,8 @@ import com.google.ar.sceneform.math.Vector3;
 public class AcceleratingNode extends Node {
     // We'll use Property Animation to make this node rotate.
     @Nullable
-    private ObjectAnimator orbitAnimation = null;
+    private ObjectAnimator rotateAnimation = null;
     private final float degreesPerSecond;
-
-    private boolean isStill = true;
 
     private final float G = 9.81f;
     private final float MAGIC = 1e-5f;
@@ -50,8 +48,6 @@ public class AcceleratingNode extends Node {
     public void onUpdate(FrameTime frameTime) {
         super.onUpdate(frameTime);
 
-        Log.d("AcceleratingNodeL", this.getWorldPosition().toString());
-
         if (this.getWorldPosition().y <= -3 && this.speed.y <= 0) {
             this.stopAnimation();
             this.setEnabled(false);
@@ -61,15 +57,12 @@ public class AcceleratingNode extends Node {
         Vector3 gravityForce = new Vector3(0, -G * this.mass, 0).scaled(frameTime.getDeltaSeconds());
         this.speed = Vector3.add(this.speed, gravityForce);
 
-        //Log.d("AcceleratingNodeL", this.speed.toString());
-
         this.setWorldPosition(Vector3.add(this.getWorldPosition(), this.speed.scaled(MAGIC)));
 
         // Rotate
-
-        float animatedFraction = orbitAnimation.getAnimatedFraction();
-        orbitAnimation.setDuration(getAnimationDuration());
-        orbitAnimation.setCurrentFraction(animatedFraction);
+        float animatedFraction = rotateAnimation.getAnimatedFraction();
+        rotateAnimation.setDuration(getAnimationDuration());
+        rotateAnimation.setCurrentFraction(animatedFraction);
     }
 
     private long getAnimationDuration() {
@@ -87,27 +80,27 @@ public class AcceleratingNode extends Node {
     }
 
     private void startAnimation() {
-        if (orbitAnimation != null) {
+        if (rotateAnimation != null) {
             return;
         }
-        orbitAnimation = createAnimator();
-        orbitAnimation.setTarget(this);
-        orbitAnimation.setDuration(1000);
-        orbitAnimation.start();
+
+        rotateAnimation = createAnimator();
+        rotateAnimation.setTarget(this);
+        rotateAnimation.setDuration(getAnimationDuration());
+        rotateAnimation.start();
     }
 
     private void stopAnimation() {
-        if (orbitAnimation == null) {
+        if (rotateAnimation == null) {
             return;
         }
-        orbitAnimation.cancel();
-        orbitAnimation = null;
+
+        rotateAnimation.cancel();
+        rotateAnimation = null;
     }
 
     /** Returns an ObjectAnimator that makes this node rotate. */
     private static ObjectAnimator createAnimator() {
-        // Node's setLocalRotation method accepts Quaternions as parameters.
-        // First, set up orientations that will animate a circle.
         float x = (float) Math.random();
         float y = (float) Math.random();
         float z = (float) Math.random();
@@ -119,21 +112,21 @@ public class AcceleratingNode extends Node {
         Quaternion orientation3 = Quaternion.axisAngle(axis, 240);
         Quaternion orientation4 = Quaternion.axisAngle(axis, 360);
 
-        ObjectAnimator orbitAnimation = new ObjectAnimator();
-        orbitAnimation.setObjectValues(orientation1, orientation2, orientation3, orientation4);
+        ObjectAnimator rotateAnimation = new ObjectAnimator();
+        rotateAnimation.setObjectValues(orientation1, orientation2, orientation3, orientation4);
 
         // Next, give it the localRotation property.
-        orbitAnimation.setPropertyName("localRotation");
+        rotateAnimation.setPropertyName("localRotation");
 
         // Use Sceneform's QuaternionEvaluator.
-        orbitAnimation.setEvaluator(new QuaternionEvaluator());
+        rotateAnimation.setEvaluator(new QuaternionEvaluator());
 
-        //  Allow orbitAnimation to repeat forever
-        orbitAnimation.setRepeatCount(ObjectAnimator.INFINITE);
-        orbitAnimation.setRepeatMode(ObjectAnimator.RESTART);
-        orbitAnimation.setInterpolator(new LinearInterpolator());
-        orbitAnimation.setAutoCancel(true);
+        //  Allow rotateAnimation to repeat forever
+        rotateAnimation.setRepeatCount(ObjectAnimator.INFINITE);
+        rotateAnimation.setRepeatMode(ObjectAnimator.RESTART);
+        rotateAnimation.setInterpolator(new LinearInterpolator());
+        rotateAnimation.setAutoCancel(true);
 
-        return orbitAnimation;
+        return rotateAnimation;
     }
 }

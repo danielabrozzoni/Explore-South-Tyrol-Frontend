@@ -161,7 +161,7 @@ public class PinActivity extends AppCompatActivity {
 
                                 Log.d("InitialForce", initialForce.toString());
 
-                                Node mStar = new AcceleratingNode(100, initialForce, 10f);
+                                Node mStar = new AcceleratingNode(100, initialForce, 650f);
                                 mStar.setParent(anchorNode);
                                 mStar.setRenderable(starRenderable);
                                 mStar.setLocalPosition(new Vector3(0f, -0.045f, 0f));
