@@ -38,15 +38,11 @@ import com.google.ar.sceneform.Node;
 import com.google.ar.sceneform.math.Quaternion;
 import com.google.ar.sceneform.math.Vector3;
 import com.google.ar.sceneform.rendering.ModelRenderable;
-import com.google.ar.sceneform.samples.solarsystem.AcceleratingNode;
+import com.google.ar.sceneform.samples.solarsystem.*;
 import com.google.ar.sceneform.samples.solarsystem.Helper.CompassHelper;
 import com.google.ar.sceneform.samples.solarsystem.Helper.DemoUtils;
 import com.google.ar.sceneform.samples.solarsystem.Helper.GestureHelper;
 import com.google.ar.sceneform.samples.solarsystem.Helper.LocationHelper;
-import com.google.ar.sceneform.samples.solarsystem.PlaceModel;
-import com.google.ar.sceneform.samples.solarsystem.PlaceNode;
-import com.google.ar.sceneform.samples.solarsystem.R;
-import com.google.ar.sceneform.samples.solarsystem.Service.PlaceService;
 import com.google.ar.sceneform.samples.solarsystem.Widget.Tutorial;
 
 import java.util.*;
@@ -72,6 +68,7 @@ public class PinActivity extends AppCompatActivity {
     private ModelRenderable starRenderable;
 
     private CompassHelper mCompassHelper;
+    private GetPointsThread mGetPoints;
 
     private LocationHelper mLocationHelper;
 
@@ -80,7 +77,6 @@ public class PinActivity extends AppCompatActivity {
 
     // True once the scene has been placed.
     private boolean hasPlacedPins = false;
-    private Anchor initialAnchor;
 
     private List<Vector3> queuedStars = new LinkedList<>();
 
@@ -134,9 +130,24 @@ public class PinActivity extends AppCompatActivity {
                                 return;
                             }
 
-                            Pose cameraPose = frame.getCamera().getPose();
+                            if (mGetPoints == null) {
+                                displayDontMoveMessage(); // Warn the user to avoid movements
+                                mCompassHelper = CompassHelper.getInstance(this);
+                                mCompassHelper.init(() -> {
+                                    mGetPoints = new GetPointsThread((float) mLocationHelper.getLastLocation().getLatitude(),
+                                            (float) mLocationHelper.getLastLocation().getLongitude(),
+                                            mCompassHelper.getCurrentDegree());
+                                    mGetPoints.start();
+                                });
 
-                            Log.d("Camera orientation", cameraPose.toString());
+                                return;
+                            }
+
+                            if (!mGetPoints.hasPlaces()) {
+                                return; // keep waiting
+                            }
+
+                            Pose cameraPose = frame.getCamera().getPose();
 
                             Vector3 initialForce = Quaternion.rotateVector(
                                     new Quaternion(cameraPose.qw(), cameraPose.qx(), cameraPose.qy(), cameraPose.qz()),
@@ -176,17 +187,8 @@ public class PinActivity extends AppCompatActivity {
 
                             for (Plane plane : frame.getUpdatedTrackables(Plane.class)) {
                                 if (plane.getTrackingState() == TrackingState.TRACKING) {
-                                    // We have a plane, let's query the server
-
-                                    displayDontMoveMessage(); // Warn the user to avoid movements
-                                    mCompassHelper = CompassHelper.getInstance(this);
-                                    mCompassHelper.init(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            onLocationAndPositionKnown(plane);
-                                        }
-                                    });
-                                    hasPlacedPins = true; // FIXME: move into the callback?
+                                    // We have a plane and some places
+                                    displayPins(mGetPoints.getPlaces(), plane);
                                 }
                             }
                         });
@@ -197,7 +199,7 @@ public class PinActivity extends AppCompatActivity {
         Node worldView = placePins(placeModels);
 
         Pose pose = new Pose(new float[]{0.0f, 0.0f, 0.0f}, new float[]{0.0f, 0.0f, 0.0f, 0.0f});
-        initialAnchor = plane.createAnchor(pose);
+        Anchor initialAnchor = plane.createAnchor(pose);
 
         AnchorNode anchorNode = new AnchorNode(initialAnchor);
         anchorNode.setParent(arSceneView.getScene());
@@ -360,27 +362,5 @@ public class PinActivity extends AppCompatActivity {
 
                             return null;
                         });
-    }
-
-    public void onLocationAndPositionKnown(Plane plane) {
-        PlaceService placeService = new PlaceService();
-        placeService.start((float) mLocationHelper.getLastLocation().getLatitude(),
-                (float) mLocationHelper.getLastLocation().getLongitude(),
-                mCompassHelper.getCurrentDegree(),
-                new Callback<List<PlaceModel>>() {
-                    @Override
-                    public void onResponse(Call<List<PlaceModel>> call, Response<List<PlaceModel>> response) {
-                        if (response.isSuccessful() && response.body() != null) {
-                            displayPins(response.body(), plane);
-                        } else {
-                            Toast.makeText(PinActivity.this, "No Internet connection", Toast.LENGTH_SHORT).show();
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(Call<List<PlaceModel>> call, Throwable t) {
-                        Log.d("PinActivity", t.getMessage());
-                    }
-                });
     }
 }
