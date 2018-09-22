@@ -35,8 +35,10 @@ import com.google.ar.core.exceptions.UnavailableException;
 import com.google.ar.sceneform.AnchorNode;
 import com.google.ar.sceneform.ArSceneView;
 import com.google.ar.sceneform.Node;
+import com.google.ar.sceneform.math.Quaternion;
 import com.google.ar.sceneform.math.Vector3;
 import com.google.ar.sceneform.rendering.ModelRenderable;
+import com.google.ar.sceneform.samples.solarsystem.AcceleratingNode;
 import com.google.ar.sceneform.samples.solarsystem.Helper.CompassHelper;
 import com.google.ar.sceneform.samples.solarsystem.Helper.DemoUtils;
 import com.google.ar.sceneform.samples.solarsystem.Helper.GestureHelper;
@@ -47,7 +49,7 @@ import com.google.ar.sceneform.samples.solarsystem.R;
 import com.google.ar.sceneform.samples.solarsystem.Service.PlaceService;
 import com.google.ar.sceneform.samples.solarsystem.Widget.Tutorial;
 
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
@@ -73,14 +75,12 @@ public class PinActivity extends AppCompatActivity {
     private LocationHelper mLocationHelper;
 
     private final float INITIAL_SCALE = 0.3f;
-
     private final float SCALE_FACTOR = 0.1f;
 
-    // True once scene is loaded
-    private boolean hasFinishedLoading = false;
-
     // True once the scene has been placed.
-    private boolean hasPlacedSolarSystem = false;
+    private boolean hasPlacedPins = false;
+
+    private List<Vector3> queuedStars = new LinkedList<>();
 
 
     private void setupGesture() {
@@ -88,6 +88,7 @@ public class PinActivity extends AppCompatActivity {
         gestureHelper.setTouchListener(findViewById(R.id.ar_scene_view),
                 force -> {
                     Log.d("PinActivityForce", force.toString());
+                    queuedStars.add(force);
                     //Toast.makeText(this, "Touched", Toast.LENGTH_SHORT).show();
                 });
     }
@@ -122,7 +123,6 @@ public class PinActivity extends AppCompatActivity {
                 .getScene()
                 .addOnUpdateListener(
                         frameTime -> {
-
                             Frame frame = arSceneView.getArFrame();
                             if (frame == null) {
                                 return;
@@ -132,13 +132,48 @@ public class PinActivity extends AppCompatActivity {
                                 return;
                             }
 
-                            if (hasPlacedSolarSystem)
+                            Pose cameraPose = frame.getCamera().getDisplayOrientedPose();
+                            AnchorNode anchorNode = null;
+
+                            if (queuedStars.size() > 0) {
+                                Anchor anchor = arSceneView.getSession().createAnchor(cameraPose);
+                                anchorNode = new AnchorNode(anchor);
+                            }
+
+                            // Try to place the stars
+                            ListIterator<Vector3> iter = queuedStars.listIterator();
+                            while(iter.hasNext()){
+                                Vector3 swipeForce = iter.next();
+
+                                Vector3 initialForce = Quaternion.rotateVector(
+                                        new Quaternion(cameraPose.qw(), cameraPose.qx(), cameraPose.qy(), cameraPose.qz()),
+                                        Vector3.one()
+                                ).scaled(1000);
+
+                                // TODO: interpolate forces (sideways)
+
+                                initialForce.y = 800f; // Up
+
+                                Log.d("InitialForce", initialForce.toString());
+
+                                Node mStar = new AcceleratingNode(100, initialForce, 0.0f);
+                                mStar.setParent(anchorNode);
+                                mStar.setRenderable(starRenderable);
+                                mStar.setLocalPosition(new Vector3(cameraPose.tx(), cameraPose.ty(), cameraPose.tz()));
+                                mStar.setLocalScale(new Vector3(0.1f, 0.1f, 0.1f));
+
+                                iter.remove();
+                            }
+
+                            if (hasPlacedPins) {
                                 return;
+                            }
 
                             for (Plane plane : frame.getUpdatedTrackables(Plane.class)) {
-
                                 if (plane.getTrackingState() == TrackingState.TRACKING) {
-                                    displayDontMoveMessage();
+                                    // We have a plane, let's query the server
+
+                                    displayDontMoveMessage(); // Warn the user to avoid movements
                                     mCompassHelper = CompassHelper.getInstance(this);
                                     mCompassHelper.init(new Runnable() {
                                         @Override
@@ -146,7 +181,7 @@ public class PinActivity extends AppCompatActivity {
                                             onLocationAndPositionKnown(plane);
                                         }
                                     });
-                                    hasPlacedSolarSystem = true;
+                                    hasPlacedPins = true; // FIXME: move into the callback?
                                 }
                             }
                         });
@@ -155,21 +190,16 @@ public class PinActivity extends AppCompatActivity {
 
     private void displayPins(List<PlaceModel> placeModels, Plane plane) {
         Node worldView = placePins(placeModels);
+
         Pose pose = new Pose(new float[]{0.0f, 0.0f, 0.0f}, new float[]{0.0f, 0.0f, 0.0f, 0.0f});
-
-        //Log.d("PinActivityL", "" + worldView.getWorldRotation().toString());
-
-        //worldView.setWorldRotation(new Quaternion(Vector3.up(),  mCompassHelper.getCurrentDegree()));
-
-        //Log.d("PinActivityL", "" + worldView.getWorldRotation().toString());
-
-        //Toast.makeText(PinActivity.this, "Rotation: " + (int)(mCompassHelper.getCurrentDegree()), Toast.LENGTH_SHORT).show();
-
         Anchor anchor = plane.createAnchor(pose);
+
         AnchorNode anchorNode = new AnchorNode(anchor);
         anchorNode.setParent(arSceneView.getScene());
         anchorNode.addChild(worldView);
+
         hideLoadingMessage();
+        hasPlacedPins = true;
     }
 
     private void displayDontMoveMessage() {
@@ -268,7 +298,6 @@ public class PinActivity extends AppCompatActivity {
         base.setLocalPosition(arSceneView.getScene().getCamera().getWorldPosition());
 
         for (PlaceModel placeModel : placeModels) {
-
             createPlace(placeModel, base, pinRenderable);
         }
 
@@ -279,8 +308,6 @@ public class PinActivity extends AppCompatActivity {
             PlaceModel placeModel,
             Node parent,
             ModelRenderable renderable) {
-
-
         float placeScale = INITIAL_SCALE + SCALE_FACTOR / placeModel.distance;
 
         PlaceNode placeNode = new PlaceNode(this, placeModel, placeScale, renderable);
@@ -322,9 +349,6 @@ public class PinActivity extends AppCompatActivity {
                                 pinRenderable = pinStage.get();
                                 starRenderable = starStage.get();
 
-                                // Everything finished loading successfully.
-                                hasFinishedLoading = true;
-
                             } catch (InterruptedException | ExecutionException ex) {
                                 DemoUtils.displayError(this, "Unable to load renderable", ex);
                             }
@@ -341,10 +365,11 @@ public class PinActivity extends AppCompatActivity {
                 new Callback<List<PlaceModel>>() {
                     @Override
                     public void onResponse(Call<List<PlaceModel>> call, Response<List<PlaceModel>> response) {
-                        if (response.isSuccessful() && response.body() != null)
+                        if (response.isSuccessful() && response.body() != null) {
                             displayPins(response.body(), plane);
-                        else
+                        } else {
                             Toast.makeText(PinActivity.this, "No Internet connection", Toast.LENGTH_SHORT).show();
+                        }
                     }
 
                     @Override
