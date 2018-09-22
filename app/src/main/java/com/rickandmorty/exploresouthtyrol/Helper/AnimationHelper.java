@@ -1,4 +1,4 @@
-package com.google.ar.sceneform.samples.solarsystem.Helper;
+package com.rickandmorty.exploresouthtyrol.Helper;
 
 import android.view.View;
 import android.view.ViewGroup;

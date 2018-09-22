@@ -1,7 +1,6 @@
-package com.google.ar.sceneform.samples.solarsystem.Helper;
+package com.rickandmorty.exploresouthtyrol.Helper;
 
 import android.app.Activity;
-import android.app.PendingIntent;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -12,7 +11,7 @@ import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.google.ar.sceneform.samples.solarsystem.Activity.PinActivity;
+import com.rickandmorty.exploresouthtyrol.Activity.PinActivity;
 
 import java.util.Locale;
 

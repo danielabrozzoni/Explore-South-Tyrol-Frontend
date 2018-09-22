@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.google.ar.sceneform.samples.solarsystem.Nodes;
+package com.rickandmorty.exploresouthtyrol.Nodes;
 
 import android.animation.ObjectAnimator;
 import android.support.annotation.Nullable;
-import android.util.Log;
 import android.view.animation.LinearInterpolator;
 import com.google.ar.sceneform.FrameTime;
 import com.google.ar.sceneform.Node;

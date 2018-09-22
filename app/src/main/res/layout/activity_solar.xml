@@ -18,7 +18,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Activity.PinActivity">
+    tools:context="com.rickandmorty.exploresouthtyrol.Activity.PinActivity">
 
   <com.google.ar.sceneform.ArSceneView
       android:id="@+id/ar_scene_view"
@@ -30,7 +30,7 @@
       app:layout_constraintStart_toStartOf="parent"
       app:layout_constraintEnd_toEndOf="parent"/>
 
-  <com.google.ar.sceneform.samples.solarsystem.Widget.Tutorial
+  <com.rickandmorty.exploresouthtyrol.Widget.Tutorial
       android:id="@+id/tutorial"
       android:layout_width="match_parent"
       android:layout_height="match_parent"

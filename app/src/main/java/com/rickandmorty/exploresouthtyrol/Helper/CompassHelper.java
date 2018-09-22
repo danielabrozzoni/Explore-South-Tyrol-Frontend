@@ -1,12 +1,10 @@
-package com.google.ar.sceneform.samples.solarsystem.Helper;
+package com.rickandmorty.exploresouthtyrol.Helper;
 
 import android.app.Activity;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.util.Log;
-import android.widget.Toast;
 
 import static android.content.Context.SENSOR_SERVICE;
 

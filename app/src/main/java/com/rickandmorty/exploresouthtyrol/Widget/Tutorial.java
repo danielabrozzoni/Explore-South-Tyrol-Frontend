@@ -1,4 +1,4 @@
-package com.google.ar.sceneform.samples.solarsystem.Widget;
+package com.rickandmorty.exploresouthtyrol.Widget;
 
 import android.content.Context;
 import android.support.annotation.Nullable;
@@ -7,10 +7,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.animation.Animation;
 import android.widget.LinearLayout;
-import android.widget.TextClock;
 import android.widget.TextView;
 
-import com.google.ar.sceneform.samples.solarsystem.Helper.AnimationHelper;
+import com.rickandmorty.exploresouthtyrol.Helper.AnimationHelper;
 import com.google.ar.sceneform.samples.solarsystem.R;
 
 public class Tutorial extends LinearLayout {

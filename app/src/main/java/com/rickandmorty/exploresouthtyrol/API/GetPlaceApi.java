@@ -1,6 +1,6 @@
-package com.google.ar.sceneform.samples.solarsystem.API;
+package com.rickandmorty.exploresouthtyrol.API;
 
-import com.google.ar.sceneform.samples.solarsystem.Model.PlaceModel;
+import com.rickandmorty.exploresouthtyrol.Model.PlaceModel;
 
 import java.util.List;
 

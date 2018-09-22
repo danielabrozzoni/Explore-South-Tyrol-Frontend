@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.google.ar.sceneform.samples.solarsystem.Nodes;
+package com.rickandmorty.exploresouthtyrol.Nodes;
 
 import android.content.Context;
 import android.text.Html;
@@ -28,7 +28,7 @@ import com.google.ar.sceneform.math.Quaternion;
 import com.google.ar.sceneform.math.Vector3;
 import com.google.ar.sceneform.rendering.ModelRenderable;
 import com.google.ar.sceneform.rendering.ViewRenderable;
-import com.google.ar.sceneform.samples.solarsystem.Model.PlaceModel;
+import com.rickandmorty.exploresouthtyrol.Model.PlaceModel;
 import com.google.ar.sceneform.samples.solarsystem.R;
 
 /**

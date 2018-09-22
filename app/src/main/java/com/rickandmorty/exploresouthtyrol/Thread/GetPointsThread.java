@@ -1,9 +1,9 @@
-package com.google.ar.sceneform.samples.solarsystem.Thread;
+package com.rickandmorty.exploresouthtyrol.Thread;
 
 import android.util.Log;
 
-import com.google.ar.sceneform.samples.solarsystem.API.GetPlaceApi;
-import com.google.ar.sceneform.samples.solarsystem.Model.PlaceModel;
+import com.rickandmorty.exploresouthtyrol.API.GetPlaceApi;
+import com.rickandmorty.exploresouthtyrol.Model.PlaceModel;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import retrofit2.Call;

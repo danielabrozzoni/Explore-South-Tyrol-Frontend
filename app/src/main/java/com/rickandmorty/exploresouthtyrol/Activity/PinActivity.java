@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.google.ar.sceneform.samples.solarsystem.Activity;
+package com.rickandmorty.exploresouthtyrol.Activity;
 
 import android.net.Uri;
 import android.os.Bundle;
@@ -39,15 +39,15 @@ import com.google.ar.sceneform.math.Quaternion;
 import com.google.ar.sceneform.math.Vector3;
 import com.google.ar.sceneform.rendering.ModelRenderable;
 import com.google.ar.sceneform.samples.solarsystem.*;
-import com.google.ar.sceneform.samples.solarsystem.Helper.CompassHelper;
-import com.google.ar.sceneform.samples.solarsystem.Helper.DemoUtils;
-import com.google.ar.sceneform.samples.solarsystem.Helper.GestureHelper;
-import com.google.ar.sceneform.samples.solarsystem.Helper.LocationHelper;
-import com.google.ar.sceneform.samples.solarsystem.Model.PlaceModel;
-import com.google.ar.sceneform.samples.solarsystem.Nodes.AcceleratingNode;
-import com.google.ar.sceneform.samples.solarsystem.Nodes.PlaceNode;
-import com.google.ar.sceneform.samples.solarsystem.Thread.GetPointsThread;
-import com.google.ar.sceneform.samples.solarsystem.Widget.Tutorial;
+import com.rickandmorty.exploresouthtyrol.Helper.CompassHelper;
+import com.rickandmorty.exploresouthtyrol.Helper.DemoUtils;
+import com.rickandmorty.exploresouthtyrol.Helper.GestureHelper;
+import com.rickandmorty.exploresouthtyrol.Helper.LocationHelper;
+import com.rickandmorty.exploresouthtyrol.Model.PlaceModel;
+import com.rickandmorty.exploresouthtyrol.Nodes.AcceleratingNode;
+import com.rickandmorty.exploresouthtyrol.Nodes.PlaceNode;
+import com.rickandmorty.exploresouthtyrol.Thread.GetPointsThread;
+import com.rickandmorty.exploresouthtyrol.Widget.Tutorial;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;

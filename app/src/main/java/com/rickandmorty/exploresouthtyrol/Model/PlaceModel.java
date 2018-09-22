@@ -1,4 +1,4 @@
-package com.google.ar.sceneform.samples.solarsystem.Model;
+package com.rickandmorty.exploresouthtyrol.Model;
 
 import com.google.gson.annotations.SerializedName;
 
