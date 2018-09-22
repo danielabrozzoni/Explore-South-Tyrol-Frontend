@@ -1,6 +1,7 @@
 package com.google.ar.sceneform.samples.solarsystem.Helper;
 
 import android.app.Activity;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -11,8 +12,8 @@ import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.google.ar.sceneform.samples.solarsystem.DemoUtils;
-import com.google.ar.sceneform.samples.solarsystem.PinActivity;
+import com.google.ar.sceneform.samples.solarsystem.Activity.PinActivity;
+import com.google.ar.sceneform.samples.solarsystem.Service.PlaceService;
 
 import java.util.Locale;
 
@@ -39,7 +40,6 @@ public class LocationHelper {
 
     private LocationHelper(Activity activity) {
         mActivity = activity;
-        initLocationService();
     }
 
     public static LocationHelper getInstance(Activity activity) {
@@ -75,7 +75,7 @@ public class LocationHelper {
         };
     }
 
-    private void initLocationService() {
+    public void initLocationService() {
 
         if (ContextCompat.checkSelfPermission(mActivity, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             DemoUtils.requestLocationPermission(mActivity, PinActivity.RC_PERMISSIONS);
@@ -119,6 +119,14 @@ public class LocationHelper {
         } catch (Exception ex) {
             Log.e(this.getClass().getSimpleName(), ex.getMessage());
 
+        } finally {
+
+            if(lastLocation == null) return;
+            ((PinActivity) mActivity).onLocationKnown();
         }
+    }
+
+    public Location getLastLocation() {
+        return lastLocation;
     }
 }

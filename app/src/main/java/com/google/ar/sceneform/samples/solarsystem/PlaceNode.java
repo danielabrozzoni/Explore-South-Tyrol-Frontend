@@ -39,27 +39,29 @@ import com.google.ar.sceneform.rendering.ViewRenderable;
  * This can be toggled on and off.
  * </ul>
  */
-public class Place extends Node implements Node.OnTapListener {
-    private final String placeName;
-    private final String description;
+public class PlaceNode extends Node implements Node.OnTapListener {
+
+    private PlaceModel placeModel;
+
     private final float placeScale;
+
     private final ModelRenderable placeRenderable;
 
     private Node infoCard;
+
     private Node placeVisual;
+
     private final Context context;
 
     private static final float INFO_CARD_Y_POS_COEFF = 0.55f;
 
-    public Place(
+    public PlaceNode(
             Context context,
-            String placeName,
-            String description,
+            PlaceModel placeModel,
             float placeScale,
             ModelRenderable placeRenderable) {
         this.context = context;
-        this.placeName = placeName;
-        this.description = description;
+        this.placeModel = placeModel;
         this.placeScale = placeScale;
         this.placeRenderable = placeRenderable;
         setOnTapListener(this);
@@ -86,8 +88,8 @@ public class Place extends Node implements Node.OnTapListener {
                             (renderable) -> {
                                 infoCard.setRenderable(renderable);
                                 View view = renderable.getView();
-                                ((TextView) view.findViewById(R.id.Title)).setText(placeName);
-                                ((TextView) view.findViewById(R.id.description)).setText(String.format("%s%s%s", placeName, placeName, placeName));
+                                ((TextView) view.findViewById(R.id.Title)).setText(placeModel.title);
+                                ((TextView) view.findViewById(R.id.description)).setText(String.format("%s", placeModel.description));
                             })
                     .exceptionally(
                             (throwable) -> {

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.google.ar.sceneform.samples.solarsystem;
+package com.google.ar.sceneform.samples.solarsystem.Activity;
 
 import android.net.Uri;
 import android.os.Bundle;
@@ -38,12 +38,22 @@ import com.google.ar.sceneform.Node;
 import com.google.ar.sceneform.math.Quaternion;
 import com.google.ar.sceneform.math.Vector3;
 import com.google.ar.sceneform.rendering.ModelRenderable;
+import com.google.ar.sceneform.samples.solarsystem.Helper.DemoUtils;
 import com.google.ar.sceneform.samples.solarsystem.Helper.LocationHelper;
 import com.google.ar.sceneform.samples.solarsystem.Helper.CompassHelper;
+import com.google.ar.sceneform.samples.solarsystem.PlaceModel;
+import com.google.ar.sceneform.samples.solarsystem.PlaceNode;
+import com.google.ar.sceneform.samples.solarsystem.R;
+import com.google.ar.sceneform.samples.solarsystem.Service.PlaceService;
 import com.google.ar.sceneform.samples.solarsystem.Widget.Tutorial;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 /**
  * This is a simple example that shows how to create an augmented reality (AR) application using the
@@ -61,6 +71,8 @@ public class PinActivity extends AppCompatActivity {
     private CompassHelper mCompassHelper;
 
     private LocationHelper mLocationHelper;
+
+    private List<PlaceModel> mPlaceModels;
 
     // True once scene is loaded
     private boolean hasFinishedLoading = false;
@@ -84,42 +96,11 @@ public class PinActivity extends AppCompatActivity {
         DemoUtils.requestLocationPermission(this, RC_PERMISSIONS);
 
         mLocationHelper = LocationHelper.getInstance(this);
+        mLocationHelper.initLocationService();
         setContentView(R.layout.activity_solar);
         arSceneView = findViewById(R.id.ar_scene_view);
 
-        CompletableFuture<ModelRenderable> pinStage =
-                ModelRenderable.builder().setSource(this, Uri.parse("Pin.sfb")).build();
-        CompletableFuture<ModelRenderable> starStage =
-                ModelRenderable.builder().setSource(this, Uri.parse("Star.sfb")).build();
-
-        CompletableFuture.allOf(
-                pinStage,
-                starStage)
-                .handle(
-                        (notUsed, throwable) -> {
-                            // When you build a Renderable, Sceneform loads its resources in the background while
-                            // returning a CompletableFuture. Call handle(), thenAccept(), or check isDone()
-                            // before calling get().
-
-                            if (throwable != null) {
-                                DemoUtils.displayError(this, "Unable to load renderable", throwable);
-                                return null;
-                            }
-
-                            try {
-                                pinRenderable = pinStage.get();
-                                starRenderable = starStage.get();
-
-                                // Everything finished loading successfully.
-                                hasFinishedLoading = true;
-
-                            } catch (InterruptedException | ExecutionException ex) {
-                                DemoUtils.displayError(this, "Unable to load renderable", ex);
-                            }
-
-                            return null;
-                        });
-
+        initRenderable();
 
         // Set an update listener on the Scene that will hide the loading message once a Plane is
         // detected.
@@ -142,17 +123,22 @@ public class PinActivity extends AppCompatActivity {
 
                     for (Plane plane : frame.getUpdatedTrackables(Plane.class)) {
 
-                        if (plane.getTrackingState() == TrackingState.TRACKING) {
+                        if (plane.getTrackingState() == TrackingState.TRACKING && mPlaceModels != null) {
                             hideLoadingMessage();
                             mCompassHelper = CompassHelper.getInstance(this, new Runnable() {
                                 @Override
                                 public void run() {
                                     Node worldView = placePins();
                                     Pose pose = new Pose(new float[]{0.0f, 0.0f, 0.0f}, new float[]{0.0f, 0.0f, 0.0f, 0.0f});
+
                                     Log.d("PinActivityL", "" + worldView.getWorldRotation().toString());
+
                                     worldView.setWorldRotation(new Quaternion(Vector3.up(),  360 + mCompassHelper.getCurrentDegree()));
+
                                     Log.d("PinActivityL", "" + worldView.getWorldRotation().toString());
+
                                     Toast.makeText(PinActivity.this, "Rotation: " + (int)(360 + mCompassHelper.getCurrentDegree()), Toast.LENGTH_SHORT).show();
+
                                     Anchor anchor = plane.createAnchor(pose);
                                     AnchorNode anchorNode = new AnchorNode(anchor);
                                     anchorNode.setParent(arSceneView.getScene());
@@ -260,29 +246,26 @@ public class PinActivity extends AppCompatActivity {
         sun.setParent(base);
         sun.setLocalPosition(new Vector3(0.0f, 0.0f, 0.0f));
 
-        createPlace("Place", "Place", sun, pinRenderable, 0.19f, 0.2f, 0.1f, 0.5f);
+        for(PlaceModel placeModel: mPlaceModels) {
 
-        createPlace("Star", "Star", sun, starRenderable, 0.019f, 0.4f, 0.2f, 1f);
+            createPlace(placeModel, base, pinRenderable, 0.9f);
+        }
 
         return base;
     }
 
     private Node createPlace(
-            String name,
-            String description,
+            PlaceModel placeModel,
             Node parent,
             ModelRenderable renderable,
-            float planetScale,
-            float x,
-            float y,
-            float z) {
+            float planetScale) {
 
-        // Create the place and position it relative to the sun.
-        Place place = new Place(this, name, description, planetScale, renderable);
-        place.setParent(parent);
-        place.setLocalPosition(new Vector3(x,y,z));
+        // Create the placeNode and position it relative to the sun.
+        PlaceNode placeNode = new PlaceNode(this, placeModel, planetScale, renderable);
+        placeNode.setParent(parent);
+        placeNode.setLocalPosition(new Vector3(placeModel.x, placeModel.y, placeModel.z));
 
-        return place;
+        return placeNode;
     }
 
     private void showLoadingMessage() {
@@ -291,5 +274,59 @@ public class PinActivity extends AppCompatActivity {
 
     private void hideLoadingMessage() {
         ((Tutorial) findViewById(R.id.tutorial)).collapse();
+    }
+
+    private void initRenderable() {
+        CompletableFuture<ModelRenderable> pinStage =
+                ModelRenderable.builder().setSource(this, Uri.parse("Pin.sfb")).build();
+        CompletableFuture<ModelRenderable> starStage =
+                ModelRenderable.builder().setSource(this, Uri.parse("Star.sfb")).build();
+
+        CompletableFuture.allOf(
+                pinStage,
+                starStage)
+                .handle(
+                        (notUsed, throwable) -> {
+                            // When you build a Renderable, Sceneform loads its resources in the background while
+                            // returning a CompletableFuture. Call handle(), thenAccept(), or check isDone()
+                            // before calling get().
+
+                            if (throwable != null) {
+                                DemoUtils.displayError(this, "Unable to load renderable", throwable);
+                                return null;
+                            }
+
+                            try {
+                                pinRenderable = pinStage.get();
+                                starRenderable = starStage.get();
+
+                                // Everything finished loading successfully.
+                                hasFinishedLoading = true;
+
+                            } catch (InterruptedException | ExecutionException ex) {
+                                DemoUtils.displayError(this, "Unable to load renderable", ex);
+                            }
+
+                            return null;
+                        });
+    }
+
+    public void onLocationKnown() {
+        PlaceService placeService = new PlaceService();
+        placeService.start((float) mLocationHelper.getLastLocation().getLatitude(),
+                (float) mLocationHelper.getLastLocation().getLongitude(), new Callback<List<PlaceModel>>() {
+                    @Override
+                    public void onResponse(Call<List<PlaceModel>> call, Response<List<PlaceModel>> response) {
+                        if(response.isSuccessful())
+                            mPlaceModels = response.body();
+                        else
+                            Toast.makeText(PinActivity.this, "No Internet connection", Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onFailure(Call<List<PlaceModel>> call, Throwable t) {
+                        Log.d("PinActivity", t.getMessage());
+                    }
+                });
     }
 }
