@@ -96,15 +96,22 @@ public class PlaceNode extends Node implements Node.OnTouchListener {
                 }
             });
 
+            int viewResID = R.layout.card_layout;
+            if(placeModel.type != null && placeModel.type.equals("STARRED")) {
+
+                viewResID = R.layout.starred_card_layout;
+            }
+
             ViewRenderable.builder()
-                    .setView(context, R.layout.card_layout)
+                    .setView(context, viewResID)
                     .build()
                     .thenAccept(
                             (renderable) -> {
                                 infoCard.setRenderable(renderable);
                                 View view = renderable.getView();
                                 ((TextView) view.findViewById(R.id.Title)).setText(placeModel.title);
-                                ((TextView) view.findViewById(R.id.description)).setText(Html.fromHtml(placeModel.description));
+                                if(placeModel.type == null || !placeModel.type.equals("STARRED"))
+                                    ((TextView) view.findViewById(R.id.description)).setText(Html.fromHtml(placeModel.description));
                             })
                     .exceptionally(
                             (throwable) -> {

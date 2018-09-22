@@ -21,7 +21,8 @@
         app:layout_constraintTop_toTopOf="parent"
         tools:text="Pieve di Marebbe"
         android:paddingStart="24dp"
-        android:paddingEnd="24dp"/>
+        android:paddingEnd="24dp"
+        android:padding="8dp"/>
 
     <ImageView
         android:id="@+id/close"
