@@ -39,7 +39,7 @@ import com.google.ar.sceneform.rendering.ViewRenderable;
  * This can be toggled on and off.
  * </ul>
  */
-public class PlaceNode extends Node implements Node.OnTapListener {
+public class PlaceNode extends Node implements Node.OnTouchListener {
 
     private PlaceModel placeModel;
 
@@ -64,7 +64,7 @@ public class PlaceNode extends Node implements Node.OnTapListener {
         this.placeModel = placeModel;
         this.placeScale = placeScale;
         this.placeRenderable = placeRenderable;
-        setOnTapListener(this);
+        setOnTouchListener(this);
     }
 
     @Override
@@ -106,12 +106,17 @@ public class PlaceNode extends Node implements Node.OnTapListener {
     }
 
     @Override
-    public void onTap(HitTestResult hitTestResult, MotionEvent motionEvent) {
+    public boolean onTouch(HitTestResult hitTestResult, MotionEvent motionEvent) {
         if (infoCard == null) {
-            return;
+            return false;
         }
 
-        infoCard.setEnabled(!infoCard.isEnabled());
+        if(motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
+            infoCard.setEnabled(!infoCard.isEnabled());
+            return true;
+        }
+
+        return false;
     }
 
     @Override

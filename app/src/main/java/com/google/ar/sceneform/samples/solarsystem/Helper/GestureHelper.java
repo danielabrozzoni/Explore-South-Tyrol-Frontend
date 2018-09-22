@@ -19,7 +19,7 @@ public class GestureHelper {
                 Log.d("PinActivityForce", "DOWN");
                 GestureHelper.this.firstX = motionEvent.getX();
                 GestureHelper.this.firstY = motionEvent.getY();
-                return true;
+                return false;
             }
 
             if(motionEvent.getAction() == MotionEvent.ACTION_UP) {
@@ -31,7 +31,7 @@ public class GestureHelper {
                 float dy = secondY - firstY;
                 Vector3 force = new Vector3(dx, dy, (float) Math.sqrt(dx*dx + dy*dy));
                 gestureListener.onForceSet(force);
-                return true;
+                return false;
             }
 
             return false;
