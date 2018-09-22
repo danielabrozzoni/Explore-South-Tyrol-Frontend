@@ -29,10 +29,10 @@
                normal: null,
             },
             {
-               metallicFactor: 0,
+               metallicFactor: 0.1,
             },
             {
-               roughnessFactor: 1,
+               roughnessFactor: 0.9,
             },
             {
                specularFactor: null,
@@ -54,8 +54,8 @@
             },
             {
                emissiveFactor: [
-                  0,
-                  0,
+                  0.186808,
+                  0.47776200000000002,
                   0,
                   1,
                ],
@@ -77,9 +77,9 @@
          parameters: [
             {
                baseColorFactor: [
-                  0.80000000000000004,
-                  0.80000000000000004,
-                  0.80000000000000004,
+                  0.750000000000000004,
+                  0.75000000000000004,
+                  0.75000000000000004,
                   1,
                ],
             },
