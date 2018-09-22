@@ -65,7 +65,7 @@ public class CompassHelper {
                     float azimuthInDegress = (float)(Math.toDegrees(azimuthInRadians)+360)%360;
                     mCurrentRadians = azimuthInRadians;
                     mCurrentDegree = -azimuthInDegress;
-                    Toast.makeText(mActivity, String.format("%s", mCurrentDegree), Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(mActivity, String.format("%s", mCurrentDegree), Toast.LENGTH_SHORT).show();
                     mSensorManager.unregisterListener(this);
                     //Log.d("CompassHelper", String.format("%s", mCurrentDegree));
                     r.run();
