@@ -57,15 +57,8 @@ public class PinActivity extends AppCompatActivity {
 
     private ArSceneView arSceneView;
 
-    private ModelRenderable sunRenderable;
-    private ModelRenderable mercuryRenderable;
-    private ModelRenderable venusRenderable;
-    private ModelRenderable earthRenderable;
-    private ModelRenderable marsRenderable;
-    private ModelRenderable jupiterRenderable;
-    private ModelRenderable saturnRenderable;
-    private ModelRenderable uranusRenderable;
-    private ModelRenderable neptuneRenderable;
+    private ModelRenderable pinRenderable;
+    private ModelRenderable starRenderable;
 
     private SensorHelper mSensorHelper;
 
@@ -96,36 +89,14 @@ public class PinActivity extends AppCompatActivity {
         setContentView(R.layout.activity_solar);
         arSceneView = findViewById(R.id.ar_scene_view);
 
-        // Build all the planet models.
-        CompletableFuture<ModelRenderable> sunStage =
-                ModelRenderable.builder().setSource(this, Uri.parse("Sol.sfb")).build();
-        CompletableFuture<ModelRenderable> mercuryStage =
-                ModelRenderable.builder().setSource(this, Uri.parse("Mercury.sfb")).build();
-        CompletableFuture<ModelRenderable> venusStage =
-                ModelRenderable.builder().setSource(this, Uri.parse("Venus.sfb")).build();
-        CompletableFuture<ModelRenderable> earthStage =
-                ModelRenderable.builder().setSource(this, Uri.parse("Earth.sfb")).build();
-        CompletableFuture<ModelRenderable> marsStage =
-                ModelRenderable.builder().setSource(this, Uri.parse("Mars.sfb")).build();
-        CompletableFuture<ModelRenderable> jupiterStage =
-                ModelRenderable.builder().setSource(this, Uri.parse("Jupiter.sfb")).build();
-        CompletableFuture<ModelRenderable> saturnStage =
-                ModelRenderable.builder().setSource(this, Uri.parse("Saturn.sfb")).build();
-        CompletableFuture<ModelRenderable> uranusStage =
-                ModelRenderable.builder().setSource(this, Uri.parse("Uranus.sfb")).build();
-        CompletableFuture<ModelRenderable> neptuneStage =
-                ModelRenderable.builder().setSource(this, Uri.parse("Neptune.sfb")).build();
+        CompletableFuture<ModelRenderable> pinStage =
+                ModelRenderable.builder().setSource(this, Uri.parse("Pin.sfb")).build();
+        CompletableFuture<ModelRenderable> starStage =
+                ModelRenderable.builder().setSource(this, Uri.parse("Star.sfb")).build();
 
         CompletableFuture.allOf(
-                sunStage,
-                mercuryStage,
-                venusStage,
-                earthStage,
-                marsStage,
-                jupiterStage,
-                saturnStage,
-                uranusStage,
-                neptuneStage)
+                pinStage,
+                starStage)
                 .handle(
                         (notUsed, throwable) -> {
                             // When you build a Renderable, Sceneform loads its resources in the background while
@@ -138,15 +109,8 @@ public class PinActivity extends AppCompatActivity {
                             }
 
                             try {
-                                sunRenderable = sunStage.get();
-                                mercuryRenderable = mercuryStage.get();
-                                venusRenderable = venusStage.get();
-                                earthRenderable = earthStage.get();
-                                marsRenderable = marsStage.get();
-                                jupiterRenderable = jupiterStage.get();
-                                saturnRenderable = saturnStage.get();
-                                uranusRenderable = uranusStage.get();
-                                neptuneRenderable = neptuneStage.get();
+                                pinRenderable = pinStage.get();
+                                starRenderable = starStage.get();
 
                                 // Everything finished loading successfully.
                                 hasFinishedLoading = true;
@@ -298,25 +262,9 @@ public class PinActivity extends AppCompatActivity {
         sun.setParent(base);
         sun.setLocalPosition(new Vector3(0.0f, 0.0f, 0.0f));
 
-        createPlace("Mercury", "Mercury", sun, mercuryRenderable, 0.19f, 0.0f, 0f, 2f);
+        createPlace("Place", "Place", sun, pinRenderable, 0.19f, 0.2f, 0.1f, 0.5f);
 
-        createPlace("Mercury2", "Mercury2", sun, mercuryRenderable, 0.19f, 0.2f, 0.1f, 0.5f);
-
-        createPlace("Mercury3", "Mercury3", sun, mercuryRenderable, 0.19f, 0.4f, 0.2f, 1f);
-
-        //createPlace("Venus", "Venus", sun, venusRenderable, 0.0475f, -2, -2, -2);
-
-        //createPlace("Earth", "Earth", sun, earthRenderable, 0.05f, 0.1f, 0.5f, 0.8f);
-
-        //createPlace("Mars", "Mars", sun, marsRenderable, 0.0265f, 0.5f, 0.1f, 0.8f);
-
-        //createPlace("Jupiter", "Jupiter", sun, jupiterRenderable, 10f, 0.5f, 0.1f, 50);
-
-        //createPlace("Saturn", "Saturn", sun, saturnRenderable, 13.25f, 2, 2, 20);
-
-        //createPlace("Uranus", "Uranus", sun, uranusRenderable, 0.1f, 0.4f, 0.1f, 0.8f);
-
-        //createPlace("Neptune", "Neptune", sun, neptuneRenderable, 0.074f, 0.6f, 0.1f, 0.9f);
+        createPlace("Star", "Star", sun, starRenderable, 0.019f, 0.4f, 0.2f, 1f);
 
         return base;
     }

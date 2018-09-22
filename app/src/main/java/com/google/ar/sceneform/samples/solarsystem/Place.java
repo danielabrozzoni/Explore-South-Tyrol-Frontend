@@ -19,6 +19,7 @@ import android.content.Context;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.TextView;
+
 import com.google.ar.sceneform.FrameTime;
 import com.google.ar.sceneform.HitTestResult;
 import com.google.ar.sceneform.Node;
@@ -29,106 +30,105 @@ import com.google.ar.sceneform.rendering.ViewRenderable;
 
 /**
  * Node that represents a place.
- *
+ * <p>
  * <p>The place creates a child nodes when it is activated:
- *
+ * <p>
  * <ul>
- *   <li>The visual of the place.
- *   <li>An info card, renders an Android View that displays the name of the place and a short description.
- *   This can be toggled on and off.
+ * <li>The visual of the place.
+ * <li>An info card, renders an Android View that displays the name of the place and a short description.
+ * This can be toggled on and off.
  * </ul>
- *
  */
 public class Place extends Node implements Node.OnTapListener {
-  private final String placeName;
-  private final String description;
-  private final float placeScale;
-  private final ModelRenderable placeRenderable;
+    private final String placeName;
+    private final String description;
+    private final float placeScale;
+    private final ModelRenderable placeRenderable;
 
-  private Node infoCard;
-  private Node placeVisual;
-  private final Context context;
+    private Node infoCard;
+    private Node placeVisual;
+    private final Context context;
 
-  private static final float INFO_CARD_Y_POS_COEFF = 0.55f;
+    private static final float INFO_CARD_Y_POS_COEFF = 0.55f;
 
-  public Place(
-      Context context,
-      String placeName,
-      String description,
-      float placeScale,
-      ModelRenderable placeRenderable) {
-    this.context = context;
-    this.placeName = placeName;
-    this.description = description;
-    this.placeScale = placeScale;
-    this.placeRenderable = placeRenderable;
-    setOnTapListener(this);
-  }
-
-  @Override
-  @SuppressWarnings({"AndroidApiChecker", "FutureReturnValueIgnored"})
-  public void onActivate() {
-
-    if (getScene() == null) {
-      throw new IllegalStateException("Scene is null!");
+    public Place(
+            Context context,
+            String placeName,
+            String description,
+            float placeScale,
+            ModelRenderable placeRenderable) {
+        this.context = context;
+        this.placeName = placeName;
+        this.description = description;
+        this.placeScale = placeScale;
+        this.placeRenderable = placeRenderable;
+        setOnTapListener(this);
     }
 
-    if (infoCard == null) {
-      infoCard = new Node();
-      infoCard.setParent(this);
-      infoCard.setEnabled(false);
-      infoCard.setLocalPosition(new Vector3(0.0f, placeScale * INFO_CARD_Y_POS_COEFF, 0.0f));
+    @Override
+    @SuppressWarnings({"AndroidApiChecker", "FutureReturnValueIgnored"})
+    public void onActivate() {
 
-      ViewRenderable.builder()
-          .setView(context, R.layout.card_layout)
-          .build()
-          .thenAccept(
-              (renderable) -> {
-                infoCard.setRenderable(renderable);
-                View view = renderable.getView();
-                ((TextView) view.findViewById(R.id.Title)).setText(placeName);
-                ((TextView) view.findViewById(R.id.description)).setText(String.format("%s%s%s", placeName, placeName, placeName));
-              })
-          .exceptionally(
-              (throwable) -> {
-                throw new AssertionError("Could not load plane card view.", throwable);
-              });
+        if (getScene() == null) {
+            throw new IllegalStateException("Scene is null!");
+        }
+
+        if (infoCard == null) {
+            infoCard = new Node();
+            infoCard.setParent(this);
+            infoCard.setEnabled(false);
+            infoCard.setLocalPosition(new Vector3(0.0f, placeScale * INFO_CARD_Y_POS_COEFF, 0.0f));
+
+            ViewRenderable.builder()
+                    .setView(context, R.layout.card_layout)
+                    .build()
+                    .thenAccept(
+                            (renderable) -> {
+                                infoCard.setRenderable(renderable);
+                                View view = renderable.getView();
+                                ((TextView) view.findViewById(R.id.Title)).setText(placeName);
+                                ((TextView) view.findViewById(R.id.description)).setText(String.format("%s%s%s", placeName, placeName, placeName));
+                            })
+                    .exceptionally(
+                            (throwable) -> {
+                                throw new AssertionError("Could not load plane card view.", throwable);
+                            });
+        }
+
+        if (placeVisual == null) {
+            placeVisual = new Node();
+            placeVisual.setParent(this);
+            placeVisual.setRenderable(placeRenderable);
+            placeVisual.setLocalScale(new Vector3(placeScale, placeScale, placeScale));
+        }
     }
 
-    if (placeVisual == null) {
-      placeVisual = new Node();
-      placeVisual.setParent(this);
-      placeVisual.setRenderable(placeRenderable);
-      placeVisual.setLocalScale(new Vector3(placeScale, placeScale, placeScale));
-    }
-  }
+    @Override
+    public void onTap(HitTestResult hitTestResult, MotionEvent motionEvent) {
+        if (infoCard == null) {
+            return;
+        }
 
-  @Override
-  public void onTap(HitTestResult hitTestResult, MotionEvent motionEvent) {
-    if (infoCard == null) {
-      return;
+        infoCard.setEnabled(!infoCard.isEnabled());
     }
 
-    infoCard.setEnabled(!infoCard.isEnabled());
-  }
+    @Override
+    public void onUpdate(FrameTime frameTime) {
+        if (infoCard == null) {
+            return;
+        }
 
-  @Override
-  public void onUpdate(FrameTime frameTime) {
-    if (infoCard == null) {
-      return;
+        // Typically, getScene() will never return null because onUpdate() is only called when the node
+        // is in the scene.
+        // However, if onUpdate is called explicitly or if the node is removed from the scene on a
+        // different thread during onUpdate, then getScene may be null.
+        if (getScene() == null) {
+            return;
+        }
+        Vector3 cameraPosition = getScene().getCamera().getWorldPosition();
+        Vector3 cardPosition = infoCard.getWorldPosition();
+        Vector3 direction = Vector3.subtract(cameraPosition, cardPosition);
+        Quaternion lookRotation = Quaternion.lookRotation(direction, Vector3.up());
+        infoCard.setWorldRotation(lookRotation);
     }
-
-    // Typically, getScene() will never return null because onUpdate() is only called when the node
-    // is in the scene.
-    // However, if onUpdate is called explicitly or if the node is removed from the scene on a
-    // different thread during onUpdate, then getScene may be null.
-    if (getScene() == null) {
-      return;
-    }
-    Vector3 cameraPosition = getScene().getCamera().getWorldPosition();
-    Vector3 cardPosition = infoCard.getWorldPosition();
-    Vector3 direction = Vector3.subtract(cameraPosition, cardPosition);
-    Quaternion lookRotation = Quaternion.lookRotation(direction, Vector3.up());
-    infoCard.setWorldRotation(lookRotation);
-  }
 }
