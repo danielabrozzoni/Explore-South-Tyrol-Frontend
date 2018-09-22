@@ -56,6 +56,7 @@ public class LocationHelper {
             public void onLocationChanged(Location location) {
                 Toast.makeText(locationHelper.mActivity, String.format(Locale.getDefault(), "Lat: %f", location.getLatitude()), Toast.LENGTH_SHORT).show();
                 locationHelper.lastLocation = location;
+                //TODO
             }
 
             @Override

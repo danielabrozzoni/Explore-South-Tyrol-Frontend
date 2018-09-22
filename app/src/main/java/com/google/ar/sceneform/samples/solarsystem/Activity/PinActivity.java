@@ -61,6 +61,7 @@ import retrofit2.Response;
  */
 public class PinActivity extends AppCompatActivity {
     public static final int RC_PERMISSIONS = 0x123;
+
     private boolean installRequested;
 
     private ArSceneView arSceneView;
@@ -74,7 +75,7 @@ public class PinActivity extends AppCompatActivity {
 
     private final float INITIAL_SCALE = 0.3f;
 
-    private final float SCALE_FACTOR = 0.1f;
+    private final float SCALE_FACTOR = 0.05f;
 
     // True once scene is loaded
     private boolean hasFinishedLoading = false;
