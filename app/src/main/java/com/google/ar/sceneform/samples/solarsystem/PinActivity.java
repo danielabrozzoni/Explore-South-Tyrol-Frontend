@@ -42,6 +42,7 @@ import com.google.ar.sceneform.rendering.ModelRenderable;
 import com.google.ar.sceneform.rendering.ViewRenderable;
 import com.google.ar.sceneform.samples.solarsystem.Helper.LocationHelper;
 import com.google.ar.sceneform.samples.solarsystem.Helper.SensorHelper;
+import com.google.ar.sceneform.samples.solarsystem.Widget.Tutorial;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -297,11 +298,6 @@ public class PinActivity extends AppCompatActivity {
         sun.setParent(base);
         sun.setLocalPosition(new Vector3(0.0f, 0.0f, 0.0f));
 
-        //Node sunVisual = new Node();
-        //sunVisual.setParent(sun);
-        //sunVisual.setRenderable(sunRenderable);
-        //sunVisual.setLocalScale(new Vector3(0.5f, 0.5f, 0.5f));
-
         createPlace("Mercury", "Mercury", sun, mercuryRenderable, 0.19f, 0.0f, 0f, 2f);
 
         createPlace("Mercury2", "Mercury2", sun, mercuryRenderable, 0.19f, 0.2f, 0.1f, 0.5f);
@@ -348,6 +344,6 @@ public class PinActivity extends AppCompatActivity {
     }
 
     private void hideLoadingMessage() {
-        findViewById(R.id.tutorial).setVisibility(View.GONE);
+        ((Tutorial) findViewById(R.id.tutorial)).collapse();
     }
 }

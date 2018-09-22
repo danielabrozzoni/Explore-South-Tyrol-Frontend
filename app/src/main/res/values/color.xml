@@ -19,4 +19,5 @@
     <color  name="deep_teal">#ff009688</color>
     <color name="colorPrimary">#3f641f</color>
     <color name="colorAccent">#b9cbaf</color>
+    <color name="colorTutorial">#3b3d3a</color>
 </resources>
