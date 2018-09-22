@@ -35,12 +35,12 @@ import com.google.ar.core.exceptions.UnavailableException;
 import com.google.ar.sceneform.AnchorNode;
 import com.google.ar.sceneform.ArSceneView;
 import com.google.ar.sceneform.Node;
-import com.google.ar.sceneform.math.Quaternion;
 import com.google.ar.sceneform.math.Vector3;
 import com.google.ar.sceneform.rendering.ModelRenderable;
-import com.google.ar.sceneform.samples.solarsystem.Helper.DemoUtils;
-import com.google.ar.sceneform.samples.solarsystem.Helper.LocationHelper;
 import com.google.ar.sceneform.samples.solarsystem.Helper.CompassHelper;
+import com.google.ar.sceneform.samples.solarsystem.Helper.DemoUtils;
+import com.google.ar.sceneform.samples.solarsystem.Helper.GestureHelper;
+import com.google.ar.sceneform.samples.solarsystem.Helper.LocationHelper;
 import com.google.ar.sceneform.samples.solarsystem.PlaceModel;
 import com.google.ar.sceneform.samples.solarsystem.PlaceNode;
 import com.google.ar.sceneform.samples.solarsystem.R;
@@ -83,6 +83,15 @@ public class PinActivity extends AppCompatActivity {
     private boolean hasPlacedSolarSystem = false;
 
 
+    private void setupGesture() {
+        GestureHelper gestureHelper = new GestureHelper();
+        gestureHelper.setTouchListener(findViewById(R.id.ar_scene_view),
+                force -> {
+                    Log.d("PinActivityForce", force.toString());
+                    //Toast.makeText(this, "Touched", Toast.LENGTH_SHORT).show();
+                });
+    }
+
     @Override
     @SuppressWarnings({"AndroidApiChecker", "FutureReturnValueIgnored"})
     // CompletableFuture requires api level 24
@@ -97,6 +106,9 @@ public class PinActivity extends AppCompatActivity {
         DemoUtils.requestCameraPermission(this, RC_PERMISSIONS);
         DemoUtils.requestLocationPermission(this, RC_PERMISSIONS);
 
+        final View rootView = getWindow().getDecorView().getRootView();
+        rootView.getViewTreeObserver().addOnGlobalLayoutListener(this::setupGesture);
+
         mLocationHelper = LocationHelper.getInstance(this);
         mLocationHelper.initLocationService();
         setContentView(R.layout.activity_solar);
@@ -107,37 +119,37 @@ public class PinActivity extends AppCompatActivity {
         // Set an update listener on the Scene that will hide the loading message once a Plane is
         // detected.
         arSceneView
-            .getScene()
-            .addOnUpdateListener(
-                frameTime -> {
+                .getScene()
+                .addOnUpdateListener(
+                        frameTime -> {
 
-                    Frame frame = arSceneView.getArFrame();
-                    if (frame == null) {
-                        return;
-                    }
+                            Frame frame = arSceneView.getArFrame();
+                            if (frame == null) {
+                                return;
+                            }
 
-                    if (frame.getCamera().getTrackingState() != TrackingState.TRACKING) {
-                        return;
-                    }
+                            if (frame.getCamera().getTrackingState() != TrackingState.TRACKING) {
+                                return;
+                            }
 
-                    if (hasPlacedSolarSystem)
-                        return;
+                            if (hasPlacedSolarSystem)
+                                return;
 
-                    for (Plane plane : frame.getUpdatedTrackables(Plane.class)) {
+                            for (Plane plane : frame.getUpdatedTrackables(Plane.class)) {
 
-                        if (plane.getTrackingState() == TrackingState.TRACKING) {
-                            displayDontMoveMessage();
-                            mCompassHelper = CompassHelper.getInstance(this);
-                            mCompassHelper.init(new Runnable() {
-                                @Override
-                                public void run() {
-                                    onLocationAndPositionKnown(plane);
+                                if (plane.getTrackingState() == TrackingState.TRACKING) {
+                                    displayDontMoveMessage();
+                                    mCompassHelper = CompassHelper.getInstance(this);
+                                    mCompassHelper.init(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            onLocationAndPositionKnown(plane);
+                                        }
+                                    });
+                                    hasPlacedSolarSystem = true;
                                 }
-                            });
-                            hasPlacedSolarSystem = true;
-                        }
-                    }
-                });
+                            }
+                        });
 
     }
 
@@ -255,7 +267,7 @@ public class PinActivity extends AppCompatActivity {
         Node base = new Node();
         base.setLocalPosition(arSceneView.getScene().getCamera().getWorldPosition());
 
-        for(PlaceModel placeModel: placeModels) {
+        for (PlaceModel placeModel : placeModels) {
 
             createPlace(placeModel, base, pinRenderable);
         }
@@ -326,10 +338,10 @@ public class PinActivity extends AppCompatActivity {
         placeService.start((float) mLocationHelper.getLastLocation().getLatitude(),
                 (float) mLocationHelper.getLastLocation().getLongitude(),
                 mCompassHelper.getCurrentDegree(),
-                 new Callback<List<PlaceModel>>() {
+                new Callback<List<PlaceModel>>() {
                     @Override
                     public void onResponse(Call<List<PlaceModel>> call, Response<List<PlaceModel>> response) {
-                        if(response.isSuccessful())
+                        if (response.isSuccessful() && response.body() != null)
                             displayPins(response.body(), plane);
                         else
                             Toast.makeText(PinActivity.this, "No Internet connection", Toast.LENGTH_SHORT).show();
