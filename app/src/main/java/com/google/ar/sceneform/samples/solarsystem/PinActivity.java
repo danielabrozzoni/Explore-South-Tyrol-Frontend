@@ -18,7 +18,6 @@ package com.google.ar.sceneform.samples.solarsystem;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -39,9 +38,8 @@ import com.google.ar.sceneform.Node;
 import com.google.ar.sceneform.math.Quaternion;
 import com.google.ar.sceneform.math.Vector3;
 import com.google.ar.sceneform.rendering.ModelRenderable;
-import com.google.ar.sceneform.rendering.ViewRenderable;
 import com.google.ar.sceneform.samples.solarsystem.Helper.LocationHelper;
-import com.google.ar.sceneform.samples.solarsystem.Helper.SensorHelper;
+import com.google.ar.sceneform.samples.solarsystem.Helper.CompassHelper;
 import com.google.ar.sceneform.samples.solarsystem.Widget.Tutorial;
 
 import java.util.concurrent.CompletableFuture;
@@ -60,7 +58,7 @@ public class PinActivity extends AppCompatActivity {
     private ModelRenderable pinRenderable;
     private ModelRenderable starRenderable;
 
-    private SensorHelper mSensorHelper;
+    private CompassHelper mCompassHelper;
 
     private LocationHelper mLocationHelper;
 
@@ -146,15 +144,15 @@ public class PinActivity extends AppCompatActivity {
 
                         if (plane.getTrackingState() == TrackingState.TRACKING) {
                             hideLoadingMessage();
-                            mSensorHelper = SensorHelper.getInstance(this, new Runnable() {
+                            mCompassHelper = CompassHelper.getInstance(this, new Runnable() {
                                 @Override
                                 public void run() {
                                     Node worldView = placePins();
                                     Pose pose = new Pose(new float[]{0.0f, 0.0f, 0.0f}, new float[]{0.0f, 0.0f, 0.0f, 0.0f});
                                     Log.d("PinActivityL", "" + worldView.getWorldRotation().toString());
-                                    worldView.setWorldRotation(new Quaternion(Vector3.up(),  360 + mSensorHelper.getCurrentDegree()));
+                                    worldView.setWorldRotation(new Quaternion(Vector3.up(),  360 + mCompassHelper.getCurrentDegree()));
                                     Log.d("PinActivityL", "" + worldView.getWorldRotation().toString());
-                                    Toast.makeText(PinActivity.this, "Rotation: " + (int)(360 + mSensorHelper.getCurrentDegree()), Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(PinActivity.this, "Rotation: " + (int)(360 + mCompassHelper.getCurrentDegree()), Toast.LENGTH_SHORT).show();
                                     Anchor anchor = plane.createAnchor(pose);
                                     AnchorNode anchorNode = new AnchorNode(anchor);
                                     anchorNode.setParent(arSceneView.getScene());

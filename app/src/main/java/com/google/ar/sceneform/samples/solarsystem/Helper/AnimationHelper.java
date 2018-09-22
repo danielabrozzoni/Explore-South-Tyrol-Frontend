@@ -7,7 +7,7 @@ import android.view.animation.Transformation;
 
 public class AnimationHelper {
 
-    public static void expand(final View v) {
+    public static void expand(final View v, Animation.AnimationListener animationListener) {
         v.measure(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         final int targetHeight = v.getMeasuredHeight();
 
@@ -30,8 +30,9 @@ public class AnimationHelper {
             }
         };
 
-        // 1dp/ms
-        a.setDuration((int)(targetHeight / v.getContext().getResources().getDisplayMetrics().density));
+        a.setAnimationListener(animationListener);
+        // 0.5dp/ms
+        a.setDuration((int)(targetHeight / v.getContext().getResources().getDisplayMetrics().density) * 2);
         v.startAnimation(a);
     }
 
@@ -58,7 +59,7 @@ public class AnimationHelper {
 
         a.setAnimationListener(animationListener);
 
-        // 1dp/ms
+        // 0.5dp/ms
         a.setDuration((int)(initialHeight / v.getContext().getResources().getDisplayMetrics().density) * 2);
         v.startAnimation(a);
     }

@@ -5,17 +5,14 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.support.annotation.StringRes;
 import android.util.Log;
 import android.widget.Toast;
 
-import java.util.Locale;
-
 import static android.content.Context.SENSOR_SERVICE;
 
-public class SensorHelper {
+public class CompassHelper {
 
-    private static SensorHelper mInstance;
+    private static CompassHelper mInstance;
 
     private SensorManager mSensorManager;
 
@@ -35,13 +32,13 @@ public class SensorHelper {
 
     private Activity mActivity;
 
-    public static SensorHelper getInstance(Activity activity, Runnable r) {
+    public static CompassHelper getInstance(Activity activity, Runnable r) {
         if(mInstance == null)
-            mInstance = new SensorHelper(activity, r);
+            mInstance = new CompassHelper(activity, r);
         return mInstance;
     }
 
-    private SensorHelper(Activity activity, Runnable r){
+    private CompassHelper(Activity activity, Runnable r){
         mActivity = activity;
         init(r);
     }
@@ -71,7 +68,7 @@ public class SensorHelper {
                     mCurrentDegree = -azimuthInDegress;
                     Toast.makeText(mActivity, String.format("%s", mCurrentDegree), Toast.LENGTH_SHORT).show();
                     mSensorManager.unregisterListener(this);
-                    Log.d("SensorHelper", String.format("%s", mCurrentDegree));
+                    Log.d("CompassHelper", String.format("%s", mCurrentDegree));
                     r.run();
                 }
 

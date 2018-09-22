@@ -38,8 +38,23 @@ public class Tutorial extends LinearLayout {
     }
 
     public void expand() {
-        AnimationHelper.expand(findViewById(R.id.view1));
-        AnimationHelper.expand(findViewById(R.id.view3));
+        AnimationHelper.expand(findViewById(R.id.view1), null);
+        AnimationHelper.expand(findViewById(R.id.view3), new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                findViewById(R.id.hint).setVisibility(VISIBLE);
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+        });
     }
 
     public void collapse() {
