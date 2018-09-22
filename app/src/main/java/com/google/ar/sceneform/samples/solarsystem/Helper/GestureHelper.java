@@ -29,8 +29,13 @@ public class GestureHelper {
                 GestureHelper.this.secondY = motionEvent.getY();
                 float dx = secondX - firstX;
                 float dy = secondY - firstY;
-                Vector3 force = new Vector3(dx, dy, (float) Math.sqrt(dx*dx + dy*dy));
-                gestureListener.onForceSet(force);
+                float dist = (float) Math.sqrt(dx*dx + dy*dy);
+
+                if (dist > 30) {
+                    Vector3 force = new Vector3(dx, dy, dist);
+                    gestureListener.onForceSet(force);
+                }
+
                 return false;
             }
 
