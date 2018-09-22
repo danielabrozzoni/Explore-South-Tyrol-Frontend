@@ -16,6 +16,7 @@
 package com.google.ar.sceneform.samples.solarsystem;
 
 import android.content.Context;
+import android.text.Html;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.TextView;
@@ -53,7 +54,7 @@ public class PlaceNode extends Node implements Node.OnTouchListener {
 
     private final Context context;
 
-    private static final float INFO_CARD_Y_POS_COEFF = 0.55f;
+    private static final float INFO_CARD_Y_POS_COEFF = 1.55f;
 
     public PlaceNode(
             Context context,
@@ -80,6 +81,18 @@ public class PlaceNode extends Node implements Node.OnTouchListener {
             infoCard.setParent(this);
             infoCard.setEnabled(false);
             infoCard.setLocalPosition(new Vector3(0.0f, placeScale * INFO_CARD_Y_POS_COEFF, 0.0f));
+            infoCard.setLocalScale(new Vector3(placeScale * 15, placeScale * 15, placeScale * 15));
+            infoCard.setOnTouchListener(new OnTouchListener() {
+                @Override
+                public boolean onTouch(HitTestResult hitTestResult, MotionEvent motionEvent) {
+                    if(motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
+                        infoCard.setEnabled(false);
+                        return true;
+                    }
+
+                    return false;
+                }
+            });
 
             ViewRenderable.builder()
                     .setView(context, R.layout.card_layout)
@@ -89,7 +102,7 @@ public class PlaceNode extends Node implements Node.OnTouchListener {
                                 infoCard.setRenderable(renderable);
                                 View view = renderable.getView();
                                 ((TextView) view.findViewById(R.id.Title)).setText(placeModel.title);
-                                ((TextView) view.findViewById(R.id.description)).setText(String.format("%s", placeModel.description));
+                                ((TextView) view.findViewById(R.id.description)).setText(Html.fromHtml(placeModel.description));
                             })
                     .exceptionally(
                             (throwable) -> {
@@ -132,6 +145,7 @@ public class PlaceNode extends Node implements Node.OnTouchListener {
         if (getScene() == null) {
             return;
         }
+
         Vector3 cameraPosition = getScene().getCamera().getWorldPosition();
         Vector3 cardPosition = infoCard.getWorldPosition();
         Vector3 direction = Vector3.subtract(cameraPosition, cardPosition);
