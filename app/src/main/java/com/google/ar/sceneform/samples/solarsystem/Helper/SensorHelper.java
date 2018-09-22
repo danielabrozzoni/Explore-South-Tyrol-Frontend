@@ -5,6 +5,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.support.annotation.StringRes;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -20,6 +21,8 @@ public class SensorHelper {
 
     private float mCurrentDegree = -1;
 
+    private float mCurrentRadians = -1;
+
     private Sensor mAccelerometer, mMagnetometer;
 
     private float[] mLastAccelerometer = new float[3], mLastMagnetometer = new float[3];
@@ -32,18 +35,18 @@ public class SensorHelper {
 
     private Activity mActivity;
 
-    public static SensorHelper getInstance(Activity activity) {
+    public static SensorHelper getInstance(Activity activity, Runnable r) {
         if(mInstance == null)
-            mInstance = new SensorHelper(activity);
+            mInstance = new SensorHelper(activity, r);
         return mInstance;
     }
 
-    private SensorHelper(Activity activity){
+    private SensorHelper(Activity activity, Runnable r){
         mActivity = activity;
-        init();
+        init(r);
     }
 
-    public SensorEventListener getSensorEventListener() {
+    public SensorEventListener getSensorEventListener(Runnable r) {
         return new SensorEventListener() {
             @Override
             public void onSensorChanged(SensorEvent event) {
@@ -64,10 +67,13 @@ public class SensorHelper {
                     SensorManager.getOrientation(mR, mOrientation);
                     float azimuthInRadians = mOrientation[0];
                     float azimuthInDegress = (float)(Math.toDegrees(azimuthInRadians)+360)%360;
+                    mCurrentRadians = azimuthInRadians;
                     mCurrentDegree = -azimuthInDegress;
+                    Toast.makeText(mActivity, String.format("%s", mCurrentDegree), Toast.LENGTH_SHORT).show();
                     mSensorManager.unregisterListener(this);
+                    Log.d("SensorHelper", String.format("%s", mCurrentDegree));
+                    r.run();
                 }
-
 
             }
 
@@ -78,11 +84,19 @@ public class SensorHelper {
         };
     }
 
-    private void init() {
+    private void init(Runnable r) {
         mSensorManager = (SensorManager) mActivity.getSystemService(SENSOR_SERVICE);
         mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         mMagnetometer = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
-        mSensorManager.registerListener(getSensorEventListener(), mAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
-        mSensorManager.registerListener(getSensorEventListener(), mMagnetometer, SensorManager.SENSOR_DELAY_NORMAL);
+        mSensorManager.registerListener(getSensorEventListener(r), mAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+        mSensorManager.registerListener(getSensorEventListener(r), mMagnetometer, SensorManager.SENSOR_DELAY_NORMAL);
+    }
+
+    public float getCurrentDegree() {
+        return mCurrentDegree;
+    }
+
+    public float getCurrentRadians() {
+        return mCurrentRadians;
     }
 }

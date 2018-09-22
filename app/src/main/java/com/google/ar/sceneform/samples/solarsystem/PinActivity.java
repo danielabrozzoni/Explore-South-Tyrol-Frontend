@@ -20,6 +20,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Toast;
@@ -35,6 +36,7 @@ import com.google.ar.core.exceptions.UnavailableException;
 import com.google.ar.sceneform.AnchorNode;
 import com.google.ar.sceneform.ArSceneView;
 import com.google.ar.sceneform.Node;
+import com.google.ar.sceneform.math.Quaternion;
 import com.google.ar.sceneform.math.Vector3;
 import com.google.ar.sceneform.rendering.ModelRenderable;
 import com.google.ar.sceneform.rendering.ViewRenderable;
@@ -51,8 +53,6 @@ import java.util.concurrent.ExecutionException;
 public class PinActivity extends AppCompatActivity {
     public static final int RC_PERMISSIONS = 0x123;
     private boolean installRequested;
-
-    private Snackbar loadingMessageSnackbar = null;
 
     private ArSceneView arSceneView;
 
@@ -92,8 +92,6 @@ public class PinActivity extends AppCompatActivity {
         DemoUtils.requestLocationPermission(this, RC_PERMISSIONS);
 
         mLocationHelper = LocationHelper.getInstance(this);
-        mSensorHelper = SensorHelper.getInstance(this);
-
         setContentView(R.layout.activity_solar);
         arSceneView = findViewById(R.id.ar_scene_view);
 
@@ -163,39 +161,46 @@ public class PinActivity extends AppCompatActivity {
         // Set an update listener on the Scene that will hide the loading message once a Plane is
         // detected.
         arSceneView
-                .getScene()
-                .addOnUpdateListener(
-                        frameTime -> {
-                            if (loadingMessageSnackbar == null) {
-                                return;
-                            }
+            .getScene()
+            .addOnUpdateListener(
+                frameTime -> {
 
-                            Frame frame = arSceneView.getArFrame();
-                            if (frame == null) {
-                                return;
-                            }
+                    Frame frame = arSceneView.getArFrame();
+                    if (frame == null) {
+                        return;
+                    }
 
-                            if (frame.getCamera().getTrackingState() != TrackingState.TRACKING) {
-                                return;
-                            }
+                    if (frame.getCamera().getTrackingState() != TrackingState.TRACKING) {
+                        return;
+                    }
 
-                            if (hasPlacedSolarSystem)
-                                return;
+                    if (hasPlacedSolarSystem)
+                        return;
 
-                            for (Plane plane : frame.getUpdatedTrackables(Plane.class)) {
+                    for (Plane plane : frame.getUpdatedTrackables(Plane.class)) {
 
-                                if (plane.getTrackingState() == TrackingState.TRACKING) {
-                                    hideLoadingMessage();
-                                    hasPlacedSolarSystem = true;
+                        if (plane.getTrackingState() == TrackingState.TRACKING) {
+                            hideLoadingMessage();
+                            mSensorHelper = SensorHelper.getInstance(this, new Runnable() {
+                                @Override
+                                public void run() {
                                     Node worldView = placePins();
                                     Pose pose = new Pose(new float[]{0.0f, 0.0f, 0.0f}, new float[]{0.0f, 0.0f, 0.0f, 0.0f});
+                                    Log.d("PinActivityL", "" + worldView.getWorldRotation().toString());
+                                    worldView.setWorldRotation(new Quaternion(Vector3.up(),  360 + mSensorHelper.getCurrentDegree()));
+                                    Log.d("PinActivityL", "" + worldView.getWorldRotation().toString());
+                                    Toast.makeText(PinActivity.this, "Rotation: " + (int)(360 + mSensorHelper.getCurrentDegree()), Toast.LENGTH_SHORT).show();
                                     Anchor anchor = plane.createAnchor(pose);
                                     AnchorNode anchorNode = new AnchorNode(anchor);
                                     anchorNode.setParent(arSceneView.getScene());
                                     anchorNode.addChild(worldView);
                                 }
-                            }
-                        });
+                            });
+                            hasPlacedSolarSystem = true;
+                        }
+                    }
+                });
+
     }
 
     @Override
@@ -297,21 +302,25 @@ public class PinActivity extends AppCompatActivity {
         //sunVisual.setRenderable(sunRenderable);
         //sunVisual.setLocalScale(new Vector3(0.5f, 0.5f, 0.5f));
 
-        createPlace("Mercury", "Mercury", sun, mercuryRenderable, 0.019f, -0.1f, -0.1f, -0.1f);
+        createPlace("Mercury", "Mercury", sun, mercuryRenderable, 0.19f, 0.0f, 0f, 2f);
 
-        createPlace("Venus", "Venus", sun, venusRenderable, 0.0475f, -2, -2, -2);
+        createPlace("Mercury2", "Mercury2", sun, mercuryRenderable, 0.19f, 0.2f, 0.1f, 0.5f);
 
-        createPlace("Earth", "Earth", sun, earthRenderable, 0.05f, 0.1f, 0.5f, 0.8f);
+        createPlace("Mercury3", "Mercury3", sun, mercuryRenderable, 0.19f, 0.4f, 0.2f, 1f);
 
-        createPlace("Mars", "Mars", sun, marsRenderable, 0.0265f, 0.5f, 0.1f, 0.8f);
+        //createPlace("Venus", "Venus", sun, venusRenderable, 0.0475f, -2, -2, -2);
 
-        createPlace("Jupiter", "Jupiter", sun, jupiterRenderable, 0.16f, 5, 5, 5);
+        //createPlace("Earth", "Earth", sun, earthRenderable, 0.05f, 0.1f, 0.5f, 0.8f);
 
-        createPlace("Saturn", "Saturn", sun, saturnRenderable, 0.1325f, 2, 2, 2);
+        //createPlace("Mars", "Mars", sun, marsRenderable, 0.0265f, 0.5f, 0.1f, 0.8f);
 
-        createPlace("Uranus", "Uranus", sun, uranusRenderable, 0.1f, 0.4f, 0.1f, 0.8f);
+        //createPlace("Jupiter", "Jupiter", sun, jupiterRenderable, 10f, 0.5f, 0.1f, 50);
 
-        createPlace("Neptune", "Neptune", sun, neptuneRenderable, 0.074f, 0.6f, 0.1f, 0.9f);
+        //createPlace("Saturn", "Saturn", sun, saturnRenderable, 13.25f, 2, 2, 20);
+
+        //createPlace("Uranus", "Uranus", sun, uranusRenderable, 0.1f, 0.4f, 0.1f, 0.8f);
+
+        //createPlace("Neptune", "Neptune", sun, neptuneRenderable, 0.074f, 0.6f, 0.1f, 0.9f);
 
         return base;
     }
@@ -335,25 +344,10 @@ public class PinActivity extends AppCompatActivity {
     }
 
     private void showLoadingMessage() {
-        if (loadingMessageSnackbar != null && loadingMessageSnackbar.isShownOrQueued()) {
-            return;
-        }
-
-        loadingMessageSnackbar =
-                Snackbar.make(
-                        PinActivity.this.findViewById(android.R.id.content),
-                        R.string.plane_finding,
-                        Snackbar.LENGTH_INDEFINITE);
-        loadingMessageSnackbar.getView().setBackgroundColor(0xbf323232);
-        loadingMessageSnackbar.show();
+        findViewById(R.id.tutorial).setVisibility(View.VISIBLE);
     }
 
     private void hideLoadingMessage() {
-        if (loadingMessageSnackbar == null) {
-            return;
-        }
-
-        loadingMessageSnackbar.dismiss();
-        loadingMessageSnackbar = null;
+        findViewById(R.id.tutorial).setVisibility(View.GONE);
     }
 }
