@@ -57,6 +57,7 @@ public class PlaceNode extends Node implements Node.OnTouchListener {
     private final Context context;
 
     private static final float INFO_CARD_Y_POS_COEFF = 3.55f;
+    private static final float STARRED_SCALE_COEFF = 0.55f;
 
     public PlaceNode(
             Context context,
@@ -82,8 +83,12 @@ public class PlaceNode extends Node implements Node.OnTouchListener {
             infoCard = new Node();
             infoCard.setParent(this);
             infoCard.setEnabled(false);
+            if(placeModel.type != null && placeModel.type.equals("STARRED")) {
+                infoCard.setLocalScale(new Vector3(placeScale * 15 * STARRED_SCALE_COEFF, placeScale * 15 * STARRED_SCALE_COEFF, placeScale * 15 * STARRED_SCALE_COEFF));
+            } else {
+                infoCard.setLocalScale(new Vector3(placeScale * 15, placeScale * 15, placeScale * 15));
+            }
             infoCard.setLocalPosition(new Vector3(0.0f, placeScale * INFO_CARD_Y_POS_COEFF, 0.0f));
-            infoCard.setLocalScale(new Vector3(placeScale * 15, placeScale * 15, placeScale * 15));
             infoCard.setOnTouchListener(new OnTouchListener() {
                 @Override
                 public boolean onTouch(HitTestResult hitTestResult, MotionEvent motionEvent) {

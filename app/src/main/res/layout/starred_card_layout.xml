@@ -19,7 +19,7 @@
         android:textSize="18sp"
         android:textStyle="bold"
         tools:layout_editor_absoluteX="76dp"
-        tools:text="Pieve di Marebbe" />
+        tools:text="123" />
 
     <ImageView
         android:layout_width="16dp"
