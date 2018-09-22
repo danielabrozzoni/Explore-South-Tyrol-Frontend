@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.google.ar.sceneform.samples.solarsystem;
+package com.google.ar.sceneform.samples.solarsystem.Nodes;
 
 import android.animation.ObjectAnimator;
 import android.support.annotation.Nullable;

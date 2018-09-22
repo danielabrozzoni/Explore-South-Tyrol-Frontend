@@ -1,4 +1,4 @@
-package com.google.ar.sceneform.samples.solarsystem;
+package com.google.ar.sceneform.samples.solarsystem.Model;
 
 import com.google.gson.annotations.SerializedName;
 

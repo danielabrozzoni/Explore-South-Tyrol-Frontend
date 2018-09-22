@@ -1,6 +1,6 @@
 package com.google.ar.sceneform.samples.solarsystem.API;
 
-import com.google.ar.sceneform.samples.solarsystem.PlaceModel;
+import com.google.ar.sceneform.samples.solarsystem.Model.PlaceModel;
 
 import java.util.List;
 

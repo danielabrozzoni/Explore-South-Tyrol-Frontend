@@ -1,9 +1,9 @@
-package com.google.ar.sceneform.samples.solarsystem;
+package com.google.ar.sceneform.samples.solarsystem.Thread;
 
 import android.util.Log;
-import android.widget.Toast;
+
 import com.google.ar.sceneform.samples.solarsystem.API.GetPlaceApi;
-import com.google.ar.sceneform.samples.solarsystem.Activity.PinActivity;
+import com.google.ar.sceneform.samples.solarsystem.Model.PlaceModel;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import retrofit2.Call;

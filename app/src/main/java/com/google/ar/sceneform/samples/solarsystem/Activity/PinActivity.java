@@ -43,15 +43,15 @@ import com.google.ar.sceneform.samples.solarsystem.Helper.CompassHelper;
 import com.google.ar.sceneform.samples.solarsystem.Helper.DemoUtils;
 import com.google.ar.sceneform.samples.solarsystem.Helper.GestureHelper;
 import com.google.ar.sceneform.samples.solarsystem.Helper.LocationHelper;
+import com.google.ar.sceneform.samples.solarsystem.Model.PlaceModel;
+import com.google.ar.sceneform.samples.solarsystem.Nodes.AcceleratingNode;
+import com.google.ar.sceneform.samples.solarsystem.Nodes.PlaceNode;
+import com.google.ar.sceneform.samples.solarsystem.Thread.GetPointsThread;
 import com.google.ar.sceneform.samples.solarsystem.Widget.Tutorial;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 /**
  * This is a simple example that shows how to create an augmented reality (AR) application using the

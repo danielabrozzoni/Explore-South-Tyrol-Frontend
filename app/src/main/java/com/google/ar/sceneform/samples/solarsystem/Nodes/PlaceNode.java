@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.google.ar.sceneform.samples.solarsystem;
+package com.google.ar.sceneform.samples.solarsystem.Nodes;
 
 import android.content.Context;
 import android.text.Html;
@@ -28,6 +28,8 @@ import com.google.ar.sceneform.math.Quaternion;
 import com.google.ar.sceneform.math.Vector3;
 import com.google.ar.sceneform.rendering.ModelRenderable;
 import com.google.ar.sceneform.rendering.ViewRenderable;
+import com.google.ar.sceneform.samples.solarsystem.Model.PlaceModel;
+import com.google.ar.sceneform.samples.solarsystem.R;
 
 /**
  * Node that represents a place.
