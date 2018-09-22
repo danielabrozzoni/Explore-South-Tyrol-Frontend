@@ -46,7 +46,9 @@ import com.rickandmorty.exploresouthtyrol.Helper.LocationHelper;
 import com.rickandmorty.exploresouthtyrol.Model.PlaceModel;
 import com.rickandmorty.exploresouthtyrol.Nodes.AcceleratingNode;
 import com.rickandmorty.exploresouthtyrol.Nodes.PlaceNode;
+import com.rickandmorty.exploresouthtyrol.Service.PlaceService;
 import com.rickandmorty.exploresouthtyrol.Thread.GetPointsThread;
+import com.rickandmorty.exploresouthtyrol.Thread.StarPlaceThread;
 import com.rickandmorty.exploresouthtyrol.Widget.Tutorial;
 
 import java.util.*;
@@ -158,6 +160,11 @@ public class PinActivity extends AppCompatActivity {
                             while(iter.hasNext()){
                                 Vector3 swipeForce = iter.next();
                                 //Vector3 initialForce = new Vector3(swipeForce.x, 300f, 0);
+
+                                Thread thread = new StarPlaceThread((float) mLocationHelper.getLastLocation().getLatitude(),
+                                        (float) mLocationHelper.getLastLocation().getLongitude());
+
+                                thread.start();
 
                                 Log.d("InitialForce", initialForce.toString());
 
