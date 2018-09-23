@@ -16,7 +16,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class PlaceService {
 
-    static final String BASE_URL = "https://378f00d8.ngrok.io/";
+    static final String BASE_URL = "https://explore-south-tyrol.herokuapp.com/";
 
     public void getPlaces(float latitude, float longitude, float heading, Callback<List<PlaceModel>> callback) {
         Gson gson = new GsonBuilder()
