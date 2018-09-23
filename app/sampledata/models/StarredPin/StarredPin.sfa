@@ -96,10 +96,10 @@
                normal: null,
             },
             {
-               metallicFactor: 0,
+               metallicFactor: 0.9,
             },
             {
-               roughnessFactor: 1,
+               roughnessFactor: 0.15,
             },
             {
                specularFactor: null,
@@ -121,9 +121,9 @@
             },
             {
                emissiveFactor: [
-                  0.57999999999999996,
-                  0.45558900000000002,
-                  0.013113,
+                  0.8,
+                  0.8,
+                  0.0,
                   1,
                ],
             },
